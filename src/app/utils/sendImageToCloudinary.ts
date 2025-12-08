@@ -5,9 +5,9 @@ import multer from 'multer';
 import config from '../config';
 
 cloudinary.config({
-  cloud_name: config.cloudinary_cloud_name,
-  api_key: config.cloudinary_api_key,
-  api_secret: config.cloudinary_api_secret,
+  cloud_name: config.cloudinary_cloud_name as string,
+  api_key: config.cloudinary_api_key as string,
+  api_secret: config.cloudinary_api_secret as string,
 });
 
 export const sendImageToCloudinary = (
