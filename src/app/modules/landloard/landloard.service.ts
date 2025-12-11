@@ -1,6 +1,6 @@
 
 import { StatusCodes } from "http-status-codes";
-import { sendImageToCloudinary } from "../../config/cloudinary";
+import { sendImageBufferToCloudinary } from "../../config/cloudinary";
 import AppError from "../../errors/AppError";
 import { RentalHouseModel } from "./landloard.model";
 import { Signup } from "../Auth/auth.model";
@@ -14,9 +14,9 @@ const createPropertiesFunc = async (data: any, files: Express.Multer.File[], use
 
   if (files && files.length > 0) {
     for (const file of files) {
-      const { secure_url } = await sendImageToCloudinary(
+      const { secure_url } = await sendImageBufferToCloudinary(
         `property-${Date.now()}-${file.originalname}`,
-        file.path,
+        file.buffer,
       );
       imageUrls.push(secure_url);
     }
@@ -72,8 +72,11 @@ const updatePropertiesFunc = async (req: Request) => {
   const imagesUrls: string[] = [];
   if (files && files.length > 0) {
     for (const file of files) {
-      const { secure_url } = await sendImageToCloudinary(`property-${Date.now()}-${file.originalname}`, file.path,);
-      imagesUrls.push(secure_url)
+      const { secure_url } = await sendImageBufferToCloudinary(
+        `property-${Date.now()}-${file.originalname}`,
+        file.buffer,
+      );
+      imagesUrls.push(secure_url);
     }
   }
   // step-4 update fields valu which is need only

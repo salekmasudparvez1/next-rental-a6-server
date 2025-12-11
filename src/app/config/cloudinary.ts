@@ -1,4 +1,4 @@
-import { UploadApiResponse, v2 as cloudinary } from 'cloudinary';
+import { v2 as cloudinary } from 'cloudinary';
 import fs from 'fs';
 import config from '../config';
 
@@ -16,9 +16,9 @@ export const sendImageToCloudinary = (
   return new Promise((resolve, reject) => {
     cloudinary.uploader.upload(
       path,
-      { 
+      {
         public_id: imageName.trim(),
-        folder: 'rental-properties' 
+        folder: 'rental-properties',
       },
       function (error, result) {
         if (error) {
@@ -28,15 +28,40 @@ export const sendImageToCloudinary = (
 
         // Delete local file after successful upload
         fs.unlink(path, err => {
-          if (err) console.log("File delete error:", err);
+          if (err) console.log('File delete error:', err);
         });
 
         resolve({
           secure_url: result?.secure_url || '',
-          public_id: result?.public_id || ''
+          public_id: result?.public_id || '',
         });
       },
     );
+  });
+};
+
+export const sendImageBufferToCloudinary = (
+  imageName: string,
+  buffer: Buffer,
+): Promise<{ secure_url: string; public_id: string }> => {
+  return new Promise((resolve, reject) => {
+    const upload = cloudinary.uploader.upload_stream(
+      {
+        public_id: imageName.trim(),
+        folder: 'rental-properties',
+      },
+      (error, result) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        resolve({
+          secure_url: result?.secure_url || '',
+          public_id: result?.public_id || '',
+        });
+      },
+    );
+    upload.end(buffer);
   });
 };
 

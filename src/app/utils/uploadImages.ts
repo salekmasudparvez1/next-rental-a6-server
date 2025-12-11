@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { sendImageToCloudinary } from '../config/cloudinary';
+import { sendImageBufferToCloudinary } from '../config/cloudinary';
 
 export const uploadMultipleImages = async (req: Request, res: Response) => {
   try {
@@ -15,9 +15,9 @@ export const uploadMultipleImages = async (req: Request, res: Response) => {
     const uploadedImages: any[] = [];
 
     for (const file of files) {
-      const result = await sendImageToCloudinary(
-        file.filename,
-        file.path,
+      const result = await sendImageBufferToCloudinary(
+        file.originalname,
+        file.buffer,
       );
       uploadedImages.push(result);
     }
