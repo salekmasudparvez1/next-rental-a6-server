@@ -24,6 +24,10 @@ app.use('/api/auth',authRouter);
 app.use('/api/landlords',landloardRouter);
 app.use('/api/tenants',tenentRouter);
 
+// lightweight healthcheck (no DB access)
+app.get('/health', (_req: Request, res: Response) => {
+  res.status(200).json({ ok: true });
+});
 
 
 app.get('/', (req: Request, res: Response) => {
