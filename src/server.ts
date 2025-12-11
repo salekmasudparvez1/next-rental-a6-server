@@ -33,13 +33,13 @@ if (!process.env.VERCEL) {
 
 // Vercel/serverless handler: ensure DB per invocation and delegate to Express
 export default async function handler(req: Request, res: Response) {
+  // Respond to health checks without touching the database
+  if (req.url?.startsWith('/health')) {
+    return res.status(200).json({ ok: true });
+  }
   try {
     await ensureDb();
   } catch {
-    // If DB fails, still allow /health to respond
-    if (req.url?.startsWith('/health')) {
-      return res.status(200).json({ ok: true, db: 'unavailable' });
-    }
     return res.status(500).send('Internal Server Error');
   }
   return app(req, res);
