@@ -1,0 +1,1 @@
+{"version":3,"file":"tenent.interface.d.ts","sourceRoot":"","sources":["../../../../src/app/modules/tenent/tenent.interface.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,KAAK,EAAE,MAAM,UAAU,CAAC;AAEjC,MAAM,WAAW,kBAAkB;IACjC,QAAQ,EAAE,KAAK,CAAC,QAAQ,CAAC;IACzB,aAAa,EAAE,KAAK,CAAC,QAAQ,CAAC;IAC9B,WAAW,EAAE,KAAK,CAAC,QAAQ,CAAC;IAC5B,MAAM,EAAE,SAAS,GAAG,SAAS,GAAG,QAAQ,CAAC;CAC1C"}

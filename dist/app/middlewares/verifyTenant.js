@@ -9,7 +9,7 @@ const config_1 = __importDefault(require("../config"));
 const AppError_1 = __importDefault(require("../errors/AppError"));
 const catchAsync_1 = __importDefault(require("../utils/catchAsync"));
 const auth_model_1 = require("../modules/Auth/auth.model");
-const verifyLandLoard = (0, catchAsync_1.default)(async (req, res, next) => {
+const verifyTenant = (0, catchAsync_1.default)(async (req, res, next) => {
     const bearerToken = req.headers.authorization;
     const token = bearerToken?.split(" ")[1];
     if (!token) {
@@ -30,8 +30,7 @@ const verifyLandLoard = (0, catchAsync_1.default)(async (req, res, next) => {
     if (!isActive) {
         throw new AppError_1.default(http_status_1.default.FORBIDDEN, 'This user is deactivated !🤮');
     }
-    if (role === "landlord" || role === "admin") {
-        // assign custom fields
+    if (role === "tenant" || role === "admin") {
         // Use a safe cast to attach custom props without fighting typings
         req.user = decoded;
         req.userId = id;
@@ -41,5 +40,5 @@ const verifyLandLoard = (0, catchAsync_1.default)(async (req, res, next) => {
         throw new AppError_1.default(http_status_1.default.UNAUTHORIZED, 'You are not authorized 😑!');
     }
 });
-exports.default = verifyLandLoard;
-//# sourceMappingURL=verifyLandLoard.js.map
+exports.default = verifyTenant;
+//# sourceMappingURL=verifyTenant.js.map

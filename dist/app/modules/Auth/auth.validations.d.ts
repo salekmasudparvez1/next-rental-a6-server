@@ -3,7 +3,7 @@ export declare const signupValidationSchema: z.ZodObject<{
     body: z.ZodObject<{
         username: z.ZodString;
         email: z.ZodString;
-        phoneNumber: z.ZodString;
+        phoneNumber: z.ZodNumber;
         password: z.ZodString;
         role: z.ZodEnum<{
             admin: "admin";

@@ -9,6 +9,7 @@ const cloudinary_1 = require("../../config/cloudinary");
 const AppError_1 = __importDefault(require("../../errors/AppError"));
 const landloard_model_1 = require("./landloard.model");
 const auth_model_1 = require("../Auth/auth.model");
+const tenent_model_1 = require("../tenent/tenent.model");
 const createPropertiesFunc = async (data, files, userId) => {
     // Upload images to Cloudinary
     const imageUrls = [];
@@ -39,8 +40,9 @@ const createPropertiesFunc = async (data, files, userId) => {
     const result = await landloard_model_1.RentalHouseModel.create(total);
     return result;
 };
-const getAllPropertiesFunc = async () => {
-    const properties = await landloard_model_1.RentalHouseModel.find();
+const getAllPropertiesFunc = async (req) => {
+    const userId = req.userId;
+    const properties = await landloard_model_1.RentalHouseModel.find({ landloardId: userId });
     return properties;
 };
 const updatePropertiesFunc = async (req) => {
@@ -54,7 +56,7 @@ const updatePropertiesFunc = async (req) => {
     if (!propertyInfo) {
         throw new AppError_1.default(http_status_codes_1.StatusCodes.NOT_FOUND, 'Property not found!');
     }
-    if (!userId.equals(propertyInfo?._id)) {
+    if (userId.toString() !== propertyInfo?.landloardId?.toString()) {
         throw new AppError_1.default(http_status_codes_1.StatusCodes.FORBIDDEN, 'You are not authorized to update this property!');
     }
     //step-2 hanlde images if given
@@ -88,9 +90,53 @@ const updatePropertiesFunc = async (req) => {
     const result = await landloard_model_1.RentalHouseModel.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
     return result;
 };
+const deletePropertiesFunc = async (req) => {
+    const id = req.params.id;
+    const userId = req.userId;
+    //step-1 validation check
+    const propertyInfo = await landloard_model_1.RentalHouseModel.findById(id);
+    if (!propertyInfo) {
+        throw new AppError_1.default(http_status_codes_1.StatusCodes.NOT_FOUND, 'Property not found!');
+    }
+    if (userId.toString() !== propertyInfo?.landloardId?.toString()) {
+        throw new AppError_1.default(http_status_codes_1.StatusCodes.FORBIDDEN, 'You are not authorized to delete this property!');
+    }
+    // step-2 delete property
+    const result = await landloard_model_1.RentalHouseModel.findByIdAndDelete(id);
+    return result;
+};
+//tenant request handle part
+const getAllRequestsFunc = async (req) => {
+    //spacific landloard id wise get request
+    const userId = req.userId;
+    const houses = await tenent_model_1.TenantApplicationModel
+        .find({ landloardId: userId })
+        .populate({ path: 'tenantId', model: auth_model_1.Signup })
+        .populate({ path: 'rentalHouseId', model: landloard_model_1.RentalHouseModel });
+    return houses;
+};
+const updateRequestFunc = async (req) => {
+    const id = req.params.id;
+    const payload = req.body;
+    const userId = req.userId;
+    //step-1 validation check
+    const requestInfo = await tenent_model_1.TenantApplicationModel.findById(id);
+    if (!requestInfo) {
+        throw new AppError_1.default(http_status_codes_1.StatusCodes.NOT_FOUND, 'Tenant application not found!');
+    }
+    if (userId.toString() !== requestInfo?.landloardId?.toString()) {
+        throw new AppError_1.default(http_status_codes_1.StatusCodes.FORBIDDEN, 'You are not authorized to update this tenant application!');
+    }
+    // Step-2: Update the tenant application status
+    const updated = await tenent_model_1.TenantApplicationModel.findByIdAndUpdate(id, { status: payload.status }, { new: true, runValidators: true });
+    return updated;
+};
 exports.landloardService = {
     createPropertiesFunc,
     getAllPropertiesFunc,
-    updatePropertiesFunc
+    updatePropertiesFunc,
+    deletePropertiesFunc,
+    getAllRequestsFunc,
+    updateRequestFunc
 };
 //# sourceMappingURL=landloard.service.js.map

@@ -1,1 +1,1 @@
-{"version":3,"file":"landloard.controller.d.ts","sourceRoot":"","sources":["../../../../src/app/modules/landloard/landloard.controller.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,OAAO,EAAE,QAAQ,EAAE,MAAM,SAAS,CAAC;AAmD5C,eAAO,MAAM,mBAAmB;;;;CAI/B,CAAC"}
+{"version":3,"file":"landloard.controller.d.ts","sourceRoot":"","sources":["../../../../src/app/modules/landloard/landloard.controller.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,OAAO,EAAE,QAAQ,EAAE,MAAM,SAAS,CAAC;AAuF5C,eAAO,MAAM,mBAAmB;;;;;;;CAO/B,CAAC"}

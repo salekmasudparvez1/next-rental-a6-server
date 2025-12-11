@@ -10,6 +10,7 @@ const globalErrorhandler_1 = __importDefault(require("./app/middlewares/globalEr
 const notFound_1 = __importDefault(require("./app/middlewares/notFound"));
 const auth_routes_1 = __importDefault(require("./app/modules/Auth/auth.routes"));
 const landloard_routes_1 = __importDefault(require("./app/modules/landloard/landloard.routes"));
+const tenent_routes_1 = __importDefault(require("./app/modules/tenent/tenent.routes"));
 const app = (0, express_1.default)();
 //parsers
 app.use(express_1.default.json());
@@ -19,6 +20,7 @@ app.use((0, cors_1.default)({ origin: ['http://localhost:3000', 'http://localhos
 // application routes
 app.use('/api/auth', auth_routes_1.default);
 app.use('/api/landlords', landloard_routes_1.default);
+app.use('/api/tenants', tenent_routes_1.default);
 app.get('/', (req, res) => {
     res.send('Server is running !');
 });

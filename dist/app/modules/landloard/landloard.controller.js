@@ -23,7 +23,7 @@ const createProperties = (0, catchAsync_1.default)(async (req, res) => {
     });
 });
 const getAllProperties = (0, catchAsync_1.default)(async (req, res) => {
-    const result = await landloard_service_1.landloardService.getAllPropertiesFunc();
+    const result = await landloard_service_1.landloardService.getAllPropertiesFunc(req);
     (0, sendResponse_1.default)(res, {
         success: true,
         message: 'Properties retrieved successfully',
@@ -40,9 +40,40 @@ const updateProperties = (0, catchAsync_1.default)(async (req, res) => {
         statusCode: http_status_codes_1.StatusCodes.OK,
     });
 });
+const deleteProperties = (0, catchAsync_1.default)(async (req, res) => {
+    const result = await landloard_service_1.landloardService.deletePropertiesFunc(req);
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        message: 'Properties deleted successfully',
+        data: result,
+        statusCode: http_status_codes_1.StatusCodes.OK,
+    });
+});
+//tenant request part
+const getAllRequests = (0, catchAsync_1.default)(async (req, res) => {
+    const result = await landloard_service_1.landloardService.getAllRequestsFunc(req);
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        message: 'Tenant requests retrieved successfully',
+        data: result,
+        statusCode: http_status_codes_1.StatusCodes.OK,
+    });
+});
+const updateRequest = (0, catchAsync_1.default)(async (req, res) => {
+    const result = await landloard_service_1.landloardService.updateRequestFunc(req);
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        message: 'Tenant application updated',
+        data: result,
+        statusCode: http_status_codes_1.StatusCodes.OK,
+    });
+});
 exports.landloardController = {
     createProperties,
     getAllProperties,
-    updateProperties
+    updateProperties,
+    deleteProperties,
+    getAllRequests,
+    updateRequest
 };
 //# sourceMappingURL=landloard.controller.js.map

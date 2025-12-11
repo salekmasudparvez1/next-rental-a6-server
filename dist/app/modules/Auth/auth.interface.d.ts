@@ -1,4 +1,4 @@
-import { Document, Model } from 'mongoose';
+import { Document, Model, Types } from 'mongoose';
 export interface IUserCreate extends Document {
     username: string;
     email: string;
@@ -22,5 +22,12 @@ export type TLoginUser = {
 export interface TJwtPayload {
     email: string;
     role: "admin" | "landlord" | "tenant";
+}
+export interface IJwtPayload extends Document {
+    id: Types.ObjectId;
+    email: string;
+    role: 'admin' | 'landlord' | 'tenant';
+    iat: number;
+    exp: number;
 }
 //# sourceMappingURL=auth.interface.d.ts.map

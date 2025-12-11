@@ -13,5 +13,9 @@ const landloardRouter = (0, express_1.Router)();
 landloardRouter.post('/listings', verifyLandLoard_1.default, multer_1.uploadMultiple, (0, validateRequest_1.default)(landloard_validations_1.RentalHouseUpdateZodSchema), landloard_controller_1.landloardController.createProperties);
 landloardRouter.get('/listings', verifyLandLoard_1.default, landloard_controller_1.landloardController.getAllProperties);
 landloardRouter.put('/listings/:id', verifyLandLoard_1.default, multer_1.uploadMultiple, (0, validateRequest_1.default)(landloard_validations_1.RentalHouseUpdateZodSchema), landloard_controller_1.landloardController.updateProperties);
+landloardRouter.delete('/listings/:id', verifyLandLoard_1.default, landloard_controller_1.landloardController.deleteProperties);
+//tenant requests part
+landloardRouter.get('/requests', verifyLandLoard_1.default, landloard_controller_1.landloardController.getAllRequests);
+landloardRouter.put('/requests/:id', verifyLandLoard_1.default, landloard_controller_1.landloardController.updateRequest);
 exports.default = landloardRouter;
 //# sourceMappingURL=landloard.routes.js.map
