@@ -14,6 +14,7 @@ const signup = (0, catchAsync_1.default)(async (req, res) => {
     const payload = {
         ...getDoc,
         isBlocked: false,
+        status: "pending",
         photoURL: 'https://res.cloudinary.com/dncnvqrc6/image/upload/v1740454884/untitled.png',
     };
     const result = await auth_service_1.authService.signupFunc(payload);
@@ -21,7 +22,7 @@ const signup = (0, catchAsync_1.default)(async (req, res) => {
         success: true,
         message: 'User sign up successfully',
         data: {
-            name: result?.name,
+            username: result?.username,
             email: result.email,
         },
         statusCode: http_status_codes_1.default.ACCEPTED,

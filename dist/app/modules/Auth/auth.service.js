@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.authService = void 0;
+exports.authService = exports.loginFunc = void 0;
 const auth_model_1 = require("./auth.model");
 const AppError_1 = __importDefault(require("../../errors/AppError"));
 const http_status_codes_1 = require("http-status-codes");
@@ -12,24 +12,67 @@ const config_1 = __importDefault(require("../../config"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const signupFunc = async (registraionDoc) => {
+    console.log(registraionDoc);
+    if (registraionDoc?.role === 'admin') {
+        throw new AppError_1.default(http_status_codes_1.StatusCodes.FORBIDDEN, 'Admin registration is not allowed');
+    }
+    if (registraionDoc?.username) {
+        const existingUser = await auth_model_1.Signup.findOne({ username: registraionDoc?.username });
+        if (existingUser) {
+            throw new AppError_1.default(http_status_codes_1.StatusCodes.CONFLICT, 'Username already exists');
+        }
+    }
+    if (registraionDoc?.email) {
+        const existingEmail = await auth_model_1.Signup.findOne({ email: registraionDoc?.email });
+        if (existingEmail) {
+            throw new AppError_1.default(http_status_codes_1.StatusCodes.CONFLICT, 'Email already exists');
+        }
+    }
+    if (registraionDoc?.username && /\s/.test(registraionDoc?.username)) {
+        throw new AppError_1.default(http_status_codes_1.StatusCodes.BAD_REQUEST, 'Username cannot contain whitespace');
+    }
     const res = await auth_model_1.Signup.create(registraionDoc);
     return res;
 };
+// Helper to safely build a case-insensitive exact-match RegExp from arbitrary input
+const escapeRegExp = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+/**
+ * Allow login using either username OR email + password.
+ * - Accepts payload.email or payload.username or payload.identifier (preferred generic name).
+ * - Performs case-insensitive lookup for both username and email.
+ */
 const loginFunc = async (payload) => {
     const session = await mongoose_1.default.startSession();
     session.startTransaction();
     try {
-        const user = await auth_model_1.Signup.findOne({ email: payload?.email }).session(session);
+        // Accept multiple possible identifier fields for flexibility
+        const rawIdentifier = (payload?.identifier ?? payload?.email ?? payload?.username)?.toString().trim();
+        const password = payload?.password;
+        if (!rawIdentifier || !password) {
+            throw new AppError_1.default(http_status_codes_1.StatusCodes.BAD_REQUEST, 'Identifier (email or username) and password are required');
+        }
+        // Use case-insensitive exact-match search on both email and username.
+        // Escaping prevents regex injection if identifier contains special chars.
+        const safe = escapeRegExp(rawIdentifier);
+        const query = {
+            $or: [
+                { email: new RegExp(`^${safe}$`, 'i') },
+                { username: new RegExp(`^${safe}$`, 'i') },
+            ],
+        };
+        const user = await auth_model_1.Signup.findOne(query).session(session);
         if (!user) {
-            throw new AppError_1.default(http_status_codes_1.StatusCodes.NOT_FOUND, 'User not found😒');
+            throw new AppError_1.default(http_status_codes_1.StatusCodes.NOT_FOUND, 'User not found 😒');
         }
         if (user?.isBlocked) {
             throw new AppError_1.default(http_status_codes_1.StatusCodes.FORBIDDEN, 'User is blocked 🤡');
         }
-        if (!(await auth_model_1.Signup.isPasswordMatched(payload?.password, user?.password))) {
-            throw new AppError_1.default(http_status_codes_1.StatusCodes.UNAUTHORIZED, 'Incorrect Password😵‍💫');
+        // Assuming Signup.isPasswordMatched(plainText, hashed) is a static helper
+        if (!(await auth_model_1.Signup.isPasswordMatched(password, user?.password))) {
+            throw new AppError_1.default(http_status_codes_1.StatusCodes.UNAUTHORIZED, 'Incorrect Password 😵‍💫');
         }
         const jwtPayload = {
+            id: user._id,
             email: user?.email,
             role: user?.role,
         };
@@ -41,7 +84,7 @@ const loginFunc = async (payload) => {
             accessToken,
             refreshToken,
             userInfo: {
-                name: user?.name,
+                username: user?.username,
                 email: user?.email,
                 role: user?.role,
                 photoURL: user?.photoURL,
@@ -54,6 +97,7 @@ const loginFunc = async (payload) => {
         throw error;
     }
 };
+exports.loginFunc = loginFunc;
 const getAllUsersFunc = async () => {
     const users = await auth_model_1.Signup.find();
     return users;
@@ -135,7 +179,7 @@ const updateNameFunc = async (payload) => {
 };
 exports.authService = {
     signupFunc,
-    loginFunc,
+    loginFunc: exports.loginFunc,
     getAllUsersFunc,
     statusFuc,
     updatePasswordFunc,

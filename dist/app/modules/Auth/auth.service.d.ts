@@ -1,5 +1,20 @@
-import { IUserCreate, TLoginUser } from './auth.interface';
+import { IUserCreate } from './auth.interface';
 import mongoose from 'mongoose';
+/**
+ * Allow login using either username OR email + password.
+ * - Accepts payload.email or payload.username or payload.identifier (preferred generic name).
+ * - Performs case-insensitive lookup for both username and email.
+ */
+export declare const loginFunc: (payload: any) => Promise<{
+    accessToken: string;
+    refreshToken: string;
+    userInfo: {
+        username: string;
+        email: string;
+        role: "admin" | "landlord" | "tenant";
+        photoURL: string;
+    };
+}>;
 interface TUpdateDoc {
     id: string;
     action: string;
@@ -10,11 +25,11 @@ export declare const authService: {
     }> & {
         __v: number;
     }>;
-    loginFunc: (payload: TLoginUser) => Promise<{
+    loginFunc: (payload: any) => Promise<{
         accessToken: string;
         refreshToken: string;
         userInfo: {
-            name: string;
+            username: string;
             email: string;
             role: "admin" | "landlord" | "tenant";
             photoURL: string;

@@ -9,28 +9,82 @@ import mongoose from 'mongoose';
 
 
 const signupFunc = async (registraionDoc: IUserCreate) => {
+  console.log(registraionDoc);
+  if (registraionDoc?.role === 'admin') {
+    throw new AppError(StatusCodes.FORBIDDEN, 'Admin registration is not allowed');
+  }
+  if (registraionDoc?.username) {
+    const existingUser = await Signup.findOne({ username: registraionDoc?.username });
+    if (existingUser) {
+      throw new AppError(StatusCodes.CONFLICT, 'Username already exists');
+    }
+  }
+  if (registraionDoc?.email) {
+    const existingEmail = await Signup.findOne({ email: registraionDoc?.email });
+    if (existingEmail) {
+      throw new AppError(StatusCodes.CONFLICT, 'Email already exists');
+    }
+   
+  } 
+  if (registraionDoc?.username && /\s/.test(registraionDoc?.username)) {
+    throw new AppError(StatusCodes.BAD_REQUEST, 'Username cannot contain whitespace');
+  }
   const res = await Signup.create(registraionDoc);
   return res;
 };
 
-const loginFunc = async (payload: TLoginUser) => {
-  const session = await mongoose.startSession(); 
+// Helper to safely build a case-insensitive exact-match RegExp from arbitrary input
+const escapeRegExp = (s: string) =>s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/**
+ * Allow login using either username OR email + password.
+ * - Accepts payload.email or payload.username or payload.identifier (preferred generic name).
+ * - Performs case-insensitive lookup for both username and email.
+ */
+export const loginFunc = async (payload: any) => {
+  const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
-    const user = await Signup.findOne({ email: payload?.email }).session(session);
+    // Accept multiple possible identifier fields for flexibility
+    const rawIdentifier =
+      (payload?.identifier ?? payload?.email ?? payload?.username)?.toString().trim();
+    const password = payload?.password;
+
+    if (!rawIdentifier || !password) {
+      throw new AppError(
+        StatusCodes.BAD_REQUEST,
+        'Identifier (email or username) and password are required'
+      );
+    }
+
+    // Use case-insensitive exact-match search on both email and username.
+    // Escaping prevents regex injection if identifier contains special chars.
+    const safe = escapeRegExp(rawIdentifier);
+    const query = {
+      $or: [
+        { email: new RegExp(`^${safe}$`, 'i') },
+        { username: new RegExp(`^${safe}$`, 'i') },
+      ],
+    };
+
+    const user = await Signup.findOne(query).session(session);
 
     if (!user) {
-      throw new AppError(StatusCodes.NOT_FOUND, 'User not found😒');
+      throw new AppError(StatusCodes.NOT_FOUND, 'User not found 😒');
     }
+
     if (user?.isBlocked) {
       throw new AppError(StatusCodes.FORBIDDEN, 'User is blocked 🤡');
     }
-    if (!(await Signup.isPasswordMatched(payload?.password, user?.password))) {
-      throw new AppError(StatusCodes.UNAUTHORIZED, 'Incorrect Password😵‍💫');
+
+    // Assuming Signup.isPasswordMatched(plainText, hashed) is a static helper
+    if (!(await Signup.isPasswordMatched(password, user?.password))) {
+      throw new AppError(StatusCodes.UNAUTHORIZED, 'Incorrect Password 😵‍💫');
     }
 
     const jwtPayload = {
+      id: user._id,
       email: user?.email,
       role: user?.role,
     };
@@ -54,7 +108,7 @@ const loginFunc = async (payload: TLoginUser) => {
       accessToken,
       refreshToken,
       userInfo: {
-        name: user?.name,
+        username: user?.username,
         email: user?.email,
         role: user?.role,
         photoURL: user?.photoURL,
@@ -124,10 +178,10 @@ const updatePasswordFunc = async (payload: any) => {
     }
 
     const res = await Signup.updateOne({ email: payload?.email }, { password: newpass }).session(session);
-    
+
     await session.commitTransaction();
     session.endSession();
-    
+
     return res;
   } catch (error) {
     await session.abortTransaction();

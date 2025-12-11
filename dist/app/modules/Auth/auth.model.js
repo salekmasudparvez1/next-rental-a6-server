@@ -40,14 +40,17 @@ exports.Signup = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const mongoose_1 = __importStar(require("mongoose"));
 const config_1 = __importDefault(require("../../config"));
-const portfolioDB = mongoose_1.default.connection.useDb(config_1.default.database_name);
+const findBasaDB = mongoose_1.default.connection.useDb(config_1.default.database_name);
 const signUpSchema = new mongoose_1.Schema({
-    name: { type: String, required: true, },
+    username: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
+    phoneNumber: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     role: { type: String, enum: ['admin', 'landlord', 'tenant'], required: true },
     isBlocked: { type: Boolean, default: false, required: true },
     isActive: { type: Boolean, default: true, required: true },
+    subscriptionPlan: { type: String, enum: ['free', 'premium'], default: 'free' },
+    status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
     photoURL: { type: String, required: true },
 }, {
     timestamps: true,
@@ -64,5 +67,5 @@ signUpSchema.statics.isPasswordMatched = async function (plainTextPassword, hash
 signUpSchema.statics.isUserExistsByCustomId = async function (email) {
     return await exports.Signup.findOne({ email }).select('+password');
 };
-exports.Signup = portfolioDB.model('users', signUpSchema);
+exports.Signup = findBasaDB.model('users', signUpSchema);
 //# sourceMappingURL=auth.model.js.map

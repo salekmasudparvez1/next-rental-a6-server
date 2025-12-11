@@ -3,6 +3,9 @@ import app from './app';
 import config from './app/config';
 import { Request, Response } from 'express';
 
+
+
+
 async function connectDatabase() {
   try {
     await mongoose.connect(config.database_url as string);

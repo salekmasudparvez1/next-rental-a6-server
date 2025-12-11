@@ -1,12 +1,15 @@
 import { Document, Model } from 'mongoose';
 export interface IUserCreate extends Document {
-    name: string;
+    username: string;
     email: string;
+    phoneNumber: string;
     password: string;
     role: 'admin' | 'landlord' | 'tenant';
     isBlocked: boolean;
     isActive: boolean;
     photoURL: string;
+    status: 'pending' | 'approved' | 'rejected';
+    subscriptionPlan: 'free' | 'premium';
 }
 export interface TLogin extends Model<IUserCreate> {
     isPasswordMatched(plainTextPassword: string, hashedPassword: string): Promise<boolean>;

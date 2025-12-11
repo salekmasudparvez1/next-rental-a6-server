@@ -7,10 +7,11 @@ import config from '../../config';
 
 const signup = catchAsync(async (req: Request, res: Response) => {
   const getDoc = req.body;
- 
+
   const payload = {
     ...getDoc,
     isBlocked: false,
+    status: "pending",
     photoURL:
       'https://res.cloudinary.com/dncnvqrc6/image/upload/v1740454884/untitled.png',
   };
@@ -20,7 +21,7 @@ const signup = catchAsync(async (req: Request, res: Response) => {
     success: true,
     message: 'User sign up successfully',
     data: {
-      name: result?.name,
+      username: result?.username,
       email: result.email,
     },
     statusCode: StatusCodes.ACCEPTED,

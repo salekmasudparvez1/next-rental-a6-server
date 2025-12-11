@@ -9,13 +9,16 @@ const express_1 = __importDefault(require("express"));
 const globalErrorhandler_1 = __importDefault(require("./app/middlewares/globalErrorhandler"));
 const notFound_1 = __importDefault(require("./app/middlewares/notFound"));
 const auth_routes_1 = __importDefault(require("./app/modules/Auth/auth.routes"));
+const landloard_routes_1 = __importDefault(require("./app/modules/landloard/landloard.routes"));
 const app = (0, express_1.default)();
 //parsers
 app.use(express_1.default.json());
 app.use((0, cookie_parser_1.default)());
+app.use(express_1.default.urlencoded({ extended: true }));
 app.use((0, cors_1.default)({ origin: ['http://localhost:3000', 'http://localhost:5000'], credentials: true }));
 // application routes
 app.use('/api/auth', auth_routes_1.default);
+app.use('/api/landlords', landloard_routes_1.default);
 app.get('/', (req, res) => {
     res.send('Server is running !');
 });
