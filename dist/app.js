@@ -21,6 +21,10 @@ app.use((0, cors_1.default)({ origin: ['http://localhost:3000', 'http://localhos
 app.use('/api/auth', auth_routes_1.default);
 app.use('/api/landlords', landloard_routes_1.default);
 app.use('/api/tenants', tenent_routes_1.default);
+// lightweight healthcheck (no DB access)
+app.get('/health', (_req, res) => {
+    res.status(200).json({ ok: true });
+});
 app.get('/', (req, res) => {
     res.send('Server is running !');
 });

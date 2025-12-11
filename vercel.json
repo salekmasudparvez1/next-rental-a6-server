@@ -4,17 +4,11 @@
     {
       "src": "src/server.ts", 
       "use": "@vercel/node"
-    },
-    {
-      "src": "src/health.ts",
-      "use": "@vercel/node"
     }
+   
   ],
   "routes": [
-    {
-      "src": "/health",
-      "dest": "src/health.ts"
-    },
+  
     {
       "src": "/(.*)",
       "dest": "src/server.ts"
