@@ -7,41 +7,114 @@ import config from '../../config';
 import bcrypt from 'bcrypt';
 import mongoose from 'mongoose';
 
-
-const signupFunc = async (registraionDoc: IUserCreate) => {
-  console.log(registraionDoc);
-  if (registraionDoc?.role === 'admin') {
+const signupFunc = async (registrationDoc: IUserCreate) => {
+  // 1. Role validation
+  if (registrationDoc.role === 'admin') {
     throw new AppError(StatusCodes.FORBIDDEN, 'Admin registration is not allowed');
   }
-  if (registraionDoc?.username) {
-    const existingUser = await Signup.findOne({ username: registraionDoc?.username });
-    if (existingUser) {
-      throw new AppError(StatusCodes.CONFLICT, 'Username already exists');
-    }
+
+  // 2. Username validation
+  if (!registrationDoc.username) {
+    throw new AppError(StatusCodes.BAD_REQUEST, 'Username is required');
   }
-  if (registraionDoc?.email) {
-    const existingEmail = await Signup.findOne({ email: registraionDoc?.email });
-    if (existingEmail) {
-      throw new AppError(StatusCodes.CONFLICT, 'Email already exists');
-    }
-   
-  } 
-  if (registraionDoc?.username && /\s/.test(registraionDoc?.username)) {
+  registrationDoc.username = registrationDoc.username.trim();
+  if (/\s/.test(registrationDoc.username)) {
     throw new AppError(StatusCodes.BAD_REQUEST, 'Username cannot contain whitespace');
   }
-  const res = await Signup.create(registraionDoc);
-  return res;
+
+  // 3. Email validation
+  if (!registrationDoc.email) {
+    throw new AppError(StatusCodes.BAD_REQUEST, 'Email is required');
+  }
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(registrationDoc.email)) {
+    throw new AppError(StatusCodes.BAD_REQUEST, 'Invalid email format');
+  }
+
+  // 4. Phone number validation
+  if (!registrationDoc.phoneNumber) {
+    throw new AppError(StatusCodes.BAD_REQUEST, 'Phone number is required');
+  }
+  const phoneRegex = /^\+?\d{10,15}$/; // optional +, 10-15 digits
+  if (!phoneRegex.test(registrationDoc.phoneNumber.toString())) {
+    throw new AppError(StatusCodes.BAD_REQUEST, 'Invalid phone number');
+  }
+
+  // 5. Check uniqueness in a single DB query
+  const existing = await Signup.findOne({
+    $or: [
+      { username: registrationDoc.username },
+      { email: registrationDoc.email },
+      { phoneNumber: registrationDoc.phoneNumber }
+    ]
+  });
+
+  if (existing) {
+    if (existing.username === registrationDoc.username) {
+      throw new AppError(StatusCodes.CONFLICT, 'Username already exists');
+    }
+    if (existing.email === registrationDoc.email) {
+      throw new AppError(StatusCodes.CONFLICT, 'Email already exists');
+    }
+    if (existing.phoneNumber === registrationDoc.phoneNumber) {
+      throw new AppError(StatusCodes.CONFLICT, 'Phone number already exists');
+    }
+  }
+
+
+
+  // 7. Create user
+  const res = await Signup.create(registrationDoc);
+
+  // 8. JWT payload
+  const jwtPayload = { 
+     id: res._id,
+      email: res?.email,
+      role: res?.role,
+      isBlocked: res?.isBlocked,
+      isActive: res?.isActive,
+      subscriptionPlan: res?.subscriptionPlan,
+      status: res?.status,
+      photoURL: res?.photoURL,
+  };
+
+  const accessToken = generateToken(
+    jwtPayload,
+    config.jwt_access_secret as string,
+    config.jwt_access_expires_in as string
+  );
+
+  const refreshToken = generateToken(
+    jwtPayload,
+    config.jwt_refresh_secret as string,
+    config.jwt_refresh_expires_in as string
+  );
+
+  // 9. Return response
+  return {
+    accessToken,
+    refreshToken,
+    userInfo: {
+      username: res.username,
+      email: res.email,
+      role: res.role,
+      photoURL: res.photoURL,
+      isBlocked: res.isBlocked,
+      status: res.status,
+      phoneNumber: res.phoneNumber,
+    },
+  };
 };
 
-// Helper to safely build a case-insensitive exact-match RegExp from arbitrary input
-const escapeRegExp = (s: string) =>s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+ // Helper to safely build a case-insensitive exact-match RegExp from arbitrary input
+const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 /**
- * Allow login using either username OR email + password.
- * - Accepts payload.email or payload.username or payload.identifier (preferred generic name).
- * - Performs case-insensitive lookup for both username and email.
- */
-export const loginFunc = async (payload: any) => {
+* Allow login using either username OR email + password.
+* - Accepts payload.email or payload.username or payload.identifier (preferred generic name).
+* - Performs case-insensitive lookup for both username and email.
+*/
+const loginFunc = async (payload: any) => {
   const session = await mongoose.startSession();
   session.startTransaction();
 
@@ -87,6 +160,11 @@ export const loginFunc = async (payload: any) => {
       id: user._id,
       email: user?.email,
       role: user?.role,
+      isBlocked: user?.isBlocked,
+      isActive: user?.isActive,
+      subscriptionPlan: user?.subscriptionPlan,
+      status: user?.status,
+      photoURL: user?.photoURL,
     };
 
     const accessToken = generateToken(

@@ -17,13 +17,16 @@ const signup = catchAsync(async (req: Request, res: Response) => {
   };
 
   const result = await authService.signupFunc(payload);
+   res.cookie("refreshToken", result.refreshToken, {
+    secure: config.NODE_ENV === "production",
+    httpOnly: true,
+    sameSite: "none",
+    maxAge: 1000 * 60 * 60 * 24 * 365,
+  });
   sendResponse(res, {
     success: true,
     message: 'User sign up successfully',
-    data: {
-      username: result?.username,
-      email: result.email,
-    },
+    data: result,
     statusCode: StatusCodes.ACCEPTED,
   });
 });
@@ -40,10 +43,7 @@ const login = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     success: true,
     message: 'User logged in successfully',
-    data: {
-      accessToken,
-      user: result?.userInfo,
-    },
+    data: result,
     statusCode: StatusCodes.OK,
   });
 });

@@ -16,9 +16,10 @@ export const loginValidationSchema = z.object({
     body: z.object({
         email: z.string().email('Invalid email address').optional(),
         username: z.string().min(1, 'Username is required').optional(),
+        identifier: z.string().min(1, 'Identifier is required').optional(),
         password: z.string().min(1, 'Password is required'),
-    }).refine((data) => data.email || data.username, {
-        message: 'Either email or username is required',
+    }).refine((data) => data.email || data.username || data.identifier, {
+        message: 'Either email, username, or identifier is required',
         path: ['email'],
     }),
 });
