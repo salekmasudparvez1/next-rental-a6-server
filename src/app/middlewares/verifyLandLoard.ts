@@ -4,9 +4,9 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import config from '../config';
 import AppError from '../errors/AppError';
 import catchAsync from '../utils/catchAsync';
-import { Signup } from '../modules/Auth/auth.model';
+import { Signup } from '../modules/auth/auth.model';
 import { Types } from 'mongoose';
-import { IJwtPayload } from '../modules/Auth/auth.interface';
+import { IJwtPayload } from '../modules/auth/auth.interface';
 
 const verifyLandLoard = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const bearerToken = req.headers.authorization;

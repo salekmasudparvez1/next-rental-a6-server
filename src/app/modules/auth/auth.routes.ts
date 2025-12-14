@@ -10,8 +10,8 @@ const authRouter = Router()
 authRouter.post('/signup', validateRequest(signupValidationSchema), authController.signup);
 authRouter.post('/login', validateRequest(loginValidationSchema), authController.login);
 authRouter.get('/profile',verifyUser ,authController.getProfileInfo);
-authRouter.get('/all-users',verifyAdmin, authController.getAllUsers);
-authRouter.delete('/delete/:id',verifyAdmin, authController.deleteUser);
+
+authRouter.patch('/update-user/:id',verifyAdmin, authController.updateUser);
 authRouter.get('/getSingle/:email', authController.getSingleUser);
 authRouter.patch('/update',verifyAdmin, authController.status);
 authRouter.patch('/update/user', authController.updateName);

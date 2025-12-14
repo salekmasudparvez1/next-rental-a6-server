@@ -1,3 +1,4 @@
+
 import { z } from 'zod';
 
 // Feature Schema
@@ -19,8 +20,11 @@ export const landlordIdSchema = z.string().refine(
 );
 // Rental House — Create Schema
 export const RentalHouseCreateZodSchema = z.object({
-  rentalHouseLocation: z.string().min(2, "Location is required"),
+  title: z.string().min(2, "Title is required"),
+  location: z.string().min(2, "Location is required"),
   description: z.string().min(5, "Description must be at least 5 characters"),
+  status: z.enum(["available", "rented", "maintenance"]).default("available"),
+  isPublished: z.boolean().default(false).optional(),
   landloardId: landlordIdSchema,
   rentAmount: z.number().positive("Rent must be a positive number"),
   images: z.array(z.string().url("Each image must be a valid URL")).optional(),

@@ -12,12 +12,15 @@ export interface IComment {
 }
 
 export interface IRentalHouse {
-  rentalHouseLocation: string;
+  title: string;
+  location: string;
   description: string;
   rentAmount: number;
   bedroomNumber: number;
   landloardId: Types.ObjectId;
   images: string[];
+  status: "available" | "rented" | "maintenance";
+  isPublished: boolean;
   features?: IFeature[];
   comments?: IComment[];
 }
@@ -26,3 +29,4 @@ export interface TRealHomeModel {
   findByLocation(location: string): Promise<IRentalHouse[]>;
   addComment(houseId: string, comment: IComment): Promise<IRentalHouse | null>;
 }
+

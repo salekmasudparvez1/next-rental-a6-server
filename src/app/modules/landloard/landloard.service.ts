@@ -3,7 +3,7 @@ import { StatusCodes } from "http-status-codes";
 import { sendImageBufferToCloudinary } from "../../config/cloudinary";
 import AppError from "../../errors/AppError";
 import { RentalHouseModel } from "./landloard.model";
-import { Signup } from "../Auth/auth.model";
+import { Signup } from "../auth/auth.model";
 import { Request } from "express";
 import { Types } from "mongoose";
 import { TenantApplicationModel } from "../tenent/tenent.model";

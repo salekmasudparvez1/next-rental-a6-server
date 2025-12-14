@@ -202,31 +202,16 @@ const loginFunc = async (payload: any) => {
   }
 };
 
-const getAllUsersFunc = async (req: any) => {
-  const page = parseInt(req.query.page as string) || 1;
-  const limit = parseInt(req.query.limit as string) || 10;
-  const skip = (page - 1) * limit;
 
-  const data = await Signup.find({ role: { $ne: 'admin' } }).skip(skip).limit(limit);
-  const total = await Signup.countDocuments({ role: { $ne: 'admin' } });
-  return {
-    data,
-    meta: {
-      page,
-      limit,
-      total,
-    }
-  };
-}
-const deleteUserFunc = async (userId: string) => {
-  const user = await Signup.findById(userId);
+
+const updateUserFunc = async (payload: IUserCreate) => {
+
+  const user = await Signup.findOne({ email: payload?.email });
   if (!user) {
     throw new AppError(StatusCodes.NOT_FOUND, 'User not found');
   }
-  if (user?.role === "admin") {
-    throw new AppError(StatusCodes.FORBIDDEN, `Admin's can not be deleted`)
-  }
-  const res = await Signup.findByIdAndDelete(userId);
+  const res = await Signup.updateOne({ email: payload?.email },
+    payload)
   return res;
 }
 interface TUpdateDoc {
@@ -340,9 +325,8 @@ export const authService = {
   signupFunc,
   loginFunc,
   getProfileInfoFunc,
-  getAllUsersFunc,
-  deleteUserFunc,
-  
+  updateUserFunc,
+
   statusFuc,
   updatePasswordFunc,
   getSingleUserFunc,

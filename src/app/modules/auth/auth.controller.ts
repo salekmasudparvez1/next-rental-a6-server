@@ -58,26 +58,21 @@ const getProfileInfo = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const getAllUsers = catchAsync(async (req: Request, res: Response) => {
-  const result = await authService.getAllUsersFunc(req as any);
+
+
+
+
+const updateUser = catchAsync(async (req: Request, res: Response) => {
+  const updatedData = req.body;
+  const result = await authService.updateUserFunc( updatedData);
   sendResponse(res, {
     success: true,
-    message: 'All users fetched successfully',
+    message: 'User updated successfully',
     data: result,
     statusCode: StatusCodes.OK,
   });
 });
 
-const deleteUser = catchAsync(async (req: Request, res: Response) => {
-  const userId = req.params.id as string;
-  const result = await authService.deleteUserFunc(userId as any);
-  sendResponse(res, {
-    success: true,
-    message: 'User deleted successfully',
-    data: result,
-    statusCode: StatusCodes.OK,
-  });
-});
 const status = catchAsync(async (req: Request, res: Response) => {
   const result = await authService.statusFuc(req?.body);
   sendResponse(res, {
@@ -126,10 +121,10 @@ export const authController = {
   signup,
   login,
   getProfileInfo,
-  deleteUser,
+  updateUser,
 
 
-  getAllUsers,
+ 
   status,
   updatePassword,
   getSingleUser,

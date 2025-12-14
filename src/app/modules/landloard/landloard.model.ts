@@ -26,10 +26,13 @@ const CommentSchema = new Schema(
 // Main Rental House Schema
 const RentalHouseSchema = new Schema<IRentalHouse>(
   {
-    rentalHouseLocation: { type: String, required: true, trim: true },
+    title: { type: String, required: true, trim: true },
+    location: { type: String, required: true, trim: true },
     description: { type: String, required: true },
     rentAmount: { type: Number, required: true },
     bedroomNumber: { type: Number, required: true },
+    status: { type: String, enum: ["available", "rented", "maintenance"], default: "available" },
+    isPublished: { type: Boolean, default: false },
     landloardId: { type: Types.ObjectId, required: true, ref: 'users' },
     features: { type: [FeatureSchema], required: false },
     comments: { type: [CommentSchema], required: false },
