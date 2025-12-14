@@ -18,13 +18,16 @@ const signup = (0, catchAsync_1.default)(async (req, res) => {
         photoURL: 'https://res.cloudinary.com/dncnvqrc6/image/upload/v1740454884/untitled.png',
     };
     const result = await auth_service_1.authService.signupFunc(payload);
+    res.cookie("refreshToken", result.refreshToken, {
+        secure: config_1.default.NODE_ENV === "production",
+        httpOnly: true,
+        sameSite: "none",
+        maxAge: 1000 * 60 * 60 * 24 * 365,
+    });
     (0, sendResponse_1.default)(res, {
         success: true,
         message: 'User sign up successfully',
-        data: {
-            username: result?.username,
-            email: result.email,
-        },
+        data: result,
         statusCode: http_status_codes_1.default.ACCEPTED,
     });
 });
@@ -40,10 +43,7 @@ const login = (0, catchAsync_1.default)(async (req, res) => {
     (0, sendResponse_1.default)(res, {
         success: true,
         message: 'User logged in successfully',
-        data: {
-            accessToken,
-            user: result?.userInfo,
-        },
+        data: result,
         statusCode: http_status_codes_1.default.OK,
     });
 });

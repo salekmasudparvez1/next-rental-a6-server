@@ -47,11 +47,33 @@ const login = catchAsync(async (req: Request, res: Response) => {
     statusCode: StatusCodes.OK,
   });
 });
+
+const getProfileInfo = catchAsync(async (req: Request, res: Response) => {
+  const result = await authService.getProfileInfoFunc(req as any);
+  sendResponse(res, {
+    success: true,
+    message: 'User profile fetched successfully',
+    data: result,
+    statusCode: StatusCodes.OK,
+  });
+});
+
 const getAllUsers = catchAsync(async (req: Request, res: Response) => {
-  const result = await authService.getAllUsersFunc();
+  const result = await authService.getAllUsersFunc(req as any);
   sendResponse(res, {
     success: true,
     message: 'All users fetched successfully',
+    data: result,
+    statusCode: StatusCodes.OK,
+  });
+});
+
+const deleteUser = catchAsync(async (req: Request, res: Response) => {
+  const userId = req.params.id as string;
+  const result = await authService.deleteUserFunc(userId as any);
+  sendResponse(res, {
+    success: true,
+    message: 'User deleted successfully',
     data: result,
     statusCode: StatusCodes.OK,
   });
@@ -103,6 +125,10 @@ const updateName = catchAsync(async (req: Request, res: Response) => {
 export const authController = {
   signup,
   login,
+  getProfileInfo,
+  deleteUser,
+
+
   getAllUsers,
   status,
   updatePassword,

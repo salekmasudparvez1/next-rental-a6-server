@@ -15,7 +15,7 @@ const createPropertiesFunc = async (data, files, userId) => {
     const imageUrls = [];
     if (files && files.length > 0) {
         for (const file of files) {
-            const { secure_url } = await (0, cloudinary_1.sendImageToCloudinary)(`property-${Date.now()}-${file.originalname}`, file.path);
+            const { secure_url } = await (0, cloudinary_1.sendImageBufferToCloudinary)(`property-${Date.now()}-${file.originalname}`, file.buffer);
             imageUrls.push(secure_url);
         }
     }
@@ -63,7 +63,7 @@ const updatePropertiesFunc = async (req) => {
     const imagesUrls = [];
     if (files && files.length > 0) {
         for (const file of files) {
-            const { secure_url } = await (0, cloudinary_1.sendImageToCloudinary)(`property-${Date.now()}-${file.originalname}`, file.path);
+            const { secure_url } = await (0, cloudinary_1.sendImageBufferToCloudinary)(`property-${Date.now()}-${file.originalname}`, file.buffer);
             imagesUrls.push(secure_url);
         }
     }

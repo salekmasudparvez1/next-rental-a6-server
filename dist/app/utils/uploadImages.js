@@ -13,7 +13,7 @@ const uploadMultipleImages = async (req, res) => {
         }
         const uploadedImages = [];
         for (const file of files) {
-            const result = await (0, cloudinary_1.sendImageToCloudinary)(file.filename, file.path);
+            const result = await (0, cloudinary_1.sendImageBufferToCloudinary)(file.originalname, file.buffer);
             uploadedImages.push(result);
         }
         return res.status(200).json({

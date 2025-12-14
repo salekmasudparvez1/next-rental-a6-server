@@ -16,9 +16,10 @@ exports.loginValidationSchema = zod_1.z.object({
     body: zod_1.z.object({
         email: zod_1.z.string().email('Invalid email address').optional(),
         username: zod_1.z.string().min(1, 'Username is required').optional(),
+        identifier: zod_1.z.string().min(1, 'Identifier is required').optional(),
         password: zod_1.z.string().min(1, 'Password is required'),
-    }).refine((data) => data.email || data.username, {
-        message: 'Either email or username is required',
+    }).refine((data) => data.email || data.username || data.identifier, {
+        message: 'Either email, username, or identifier is required',
         path: ['email'],
     }),
 });

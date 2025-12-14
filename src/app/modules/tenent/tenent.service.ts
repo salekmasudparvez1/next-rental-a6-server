@@ -32,13 +32,7 @@ const listRequestsFunc = async (req: Request) => {
   // Extra visibility while debugging
   const all = await TenantApplicationModel.find().lean();
   const requests = await TenantApplicationModel.find({ tenantId: userId }).lean();
-  console.log({
-    user: (req as any).user,
-    userId,
-    totalDocs: all.length,
-    sampleDocs: all.slice(0, 3),
-    matched: requests.length,
-  });
+
   return requests;
 };
 

@@ -67,15 +67,16 @@ const signupFunc = async (registrationDoc: IUserCreate) => {
   const res = await Signup.create(registrationDoc);
 
   // 8. JWT payload
-  const jwtPayload = { 
-     id: res._id,
-      email: res?.email,
-      role: res?.role,
-      isBlocked: res?.isBlocked,
-      isActive: res?.isActive,
-      subscriptionPlan: res?.subscriptionPlan,
-      status: res?.status,
-      photoURL: res?.photoURL,
+  const jwtPayload = {
+    id: res._id,
+    email: res?.email,
+    userName: res?.username,
+    role: res?.role,
+    isBlocked: res?.isBlocked,
+    isActive: res?.isActive,
+    subscriptionPlan: res?.subscriptionPlan,
+    status: res?.status,
+    photoURL: res?.photoURL,
   };
 
   const accessToken = generateToken(
@@ -106,7 +107,7 @@ const signupFunc = async (registrationDoc: IUserCreate) => {
   };
 };
 
- // Helper to safely build a case-insensitive exact-match RegExp from arbitrary input
+// Helper to safely build a case-insensitive exact-match RegExp from arbitrary input
 const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 /**
@@ -114,6 +115,7 @@ const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 * - Accepts payload.email or payload.username or payload.identifier (preferred generic name).
 * - Performs case-insensitive lookup for both username and email.
 */
+
 const loginFunc = async (payload: any) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -160,6 +162,7 @@ const loginFunc = async (payload: any) => {
       id: user._id,
       email: user?.email,
       role: user?.role,
+      userName: user?.username,
       isBlocked: user?.isBlocked,
       isActive: user?.isActive,
       subscriptionPlan: user?.subscriptionPlan,
@@ -199,14 +202,51 @@ const loginFunc = async (payload: any) => {
   }
 };
 
-const getAllUsersFunc = async () => {
-  const users = await Signup.find();
-  return users;
+const getAllUsersFunc = async (req: any) => {
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 10;
+  const skip = (page - 1) * limit;
+
+  const data = await Signup.find({ role: { $ne: 'admin' } }).skip(skip).limit(limit);
+  const total = await Signup.countDocuments({ role: { $ne: 'admin' } });
+  return {
+    data,
+    meta: {
+      page,
+      limit,
+      total,
+    }
+  };
+}
+const deleteUserFunc = async (userId: string) => {
+  const user = await Signup.findById(userId);
+  if (!user) {
+    throw new AppError(StatusCodes.NOT_FOUND, 'User not found');
+  }
+  if (user?.role === "admin") {
+    throw new AppError(StatusCodes.FORBIDDEN, `Admin's can not be deleted`)
+  }
+  const res = await Signup.findByIdAndDelete(userId);
+  return res;
 }
 interface TUpdateDoc {
   id: string,
   action: string
 }
+
+const getProfileInfoFunc = async (req: Request) => {
+  const payload = (req as any).user
+  if (!payload?.email) {
+    throw new AppError(StatusCodes.UNAUTHORIZED, 'User not found');
+  }
+  const user = await Signup.findOne({ email: payload?.email });
+  if (!user) {
+    throw new AppError(StatusCodes.NOT_FOUND, 'User not found');
+  }
+
+  return user;
+}
+
 const statusFuc = async (payload: TUpdateDoc) => {
   const users = await Signup.findById(payload?.id);
   if (!users) {
@@ -299,7 +339,10 @@ const updateNameFunc = async (payload: any) => {
 export const authService = {
   signupFunc,
   loginFunc,
+  getProfileInfoFunc,
   getAllUsersFunc,
+  deleteUserFunc,
+  
   statusFuc,
   updatePasswordFunc,
   getSingleUserFunc,

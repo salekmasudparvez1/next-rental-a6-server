@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.authService = exports.loginFunc = void 0;
+exports.authService = void 0;
 const auth_model_1 = require("./auth.model");
 const AppError_1 = __importDefault(require("../../errors/AppError"));
 const http_status_codes_1 = require("http-status-codes");
@@ -11,36 +11,91 @@ const auth_utils_1 = require("./auth.utils");
 const config_1 = __importDefault(require("../../config"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const mongoose_1 = __importDefault(require("mongoose"));
-const signupFunc = async (registraionDoc) => {
-    console.log(registraionDoc);
-    if (registraionDoc?.role === 'admin') {
+const signupFunc = async (registrationDoc) => {
+    // 1. Role validation
+    if (registrationDoc.role === 'admin') {
         throw new AppError_1.default(http_status_codes_1.StatusCodes.FORBIDDEN, 'Admin registration is not allowed');
     }
-    if (registraionDoc?.username) {
-        const existingUser = await auth_model_1.Signup.findOne({ username: registraionDoc?.username });
-        if (existingUser) {
-            throw new AppError_1.default(http_status_codes_1.StatusCodes.CONFLICT, 'Username already exists');
-        }
+    // 2. Username validation
+    if (!registrationDoc.username) {
+        throw new AppError_1.default(http_status_codes_1.StatusCodes.BAD_REQUEST, 'Username is required');
     }
-    if (registraionDoc?.email) {
-        const existingEmail = await auth_model_1.Signup.findOne({ email: registraionDoc?.email });
-        if (existingEmail) {
-            throw new AppError_1.default(http_status_codes_1.StatusCodes.CONFLICT, 'Email already exists');
-        }
-    }
-    if (registraionDoc?.username && /\s/.test(registraionDoc?.username)) {
+    registrationDoc.username = registrationDoc.username.trim();
+    if (/\s/.test(registrationDoc.username)) {
         throw new AppError_1.default(http_status_codes_1.StatusCodes.BAD_REQUEST, 'Username cannot contain whitespace');
     }
-    const res = await auth_model_1.Signup.create(registraionDoc);
-    return res;
+    // 3. Email validation
+    if (!registrationDoc.email) {
+        throw new AppError_1.default(http_status_codes_1.StatusCodes.BAD_REQUEST, 'Email is required');
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(registrationDoc.email)) {
+        throw new AppError_1.default(http_status_codes_1.StatusCodes.BAD_REQUEST, 'Invalid email format');
+    }
+    // 4. Phone number validation
+    if (!registrationDoc.phoneNumber) {
+        throw new AppError_1.default(http_status_codes_1.StatusCodes.BAD_REQUEST, 'Phone number is required');
+    }
+    const phoneRegex = /^\+?\d{10,15}$/; // optional +, 10-15 digits
+    if (!phoneRegex.test(registrationDoc.phoneNumber.toString())) {
+        throw new AppError_1.default(http_status_codes_1.StatusCodes.BAD_REQUEST, 'Invalid phone number');
+    }
+    // 5. Check uniqueness in a single DB query
+    const existing = await auth_model_1.Signup.findOne({
+        $or: [
+            { username: registrationDoc.username },
+            { email: registrationDoc.email },
+            { phoneNumber: registrationDoc.phoneNumber }
+        ]
+    });
+    if (existing) {
+        if (existing.username === registrationDoc.username) {
+            throw new AppError_1.default(http_status_codes_1.StatusCodes.CONFLICT, 'Username already exists');
+        }
+        if (existing.email === registrationDoc.email) {
+            throw new AppError_1.default(http_status_codes_1.StatusCodes.CONFLICT, 'Email already exists');
+        }
+        if (existing.phoneNumber === registrationDoc.phoneNumber) {
+            throw new AppError_1.default(http_status_codes_1.StatusCodes.CONFLICT, 'Phone number already exists');
+        }
+    }
+    // 7. Create user
+    const res = await auth_model_1.Signup.create(registrationDoc);
+    // 8. JWT payload
+    const jwtPayload = {
+        id: res._id,
+        email: res?.email,
+        role: res?.role,
+        isBlocked: res?.isBlocked,
+        isActive: res?.isActive,
+        subscriptionPlan: res?.subscriptionPlan,
+        status: res?.status,
+        photoURL: res?.photoURL,
+    };
+    const accessToken = (0, auth_utils_1.generateToken)(jwtPayload, config_1.default.jwt_access_secret, config_1.default.jwt_access_expires_in);
+    const refreshToken = (0, auth_utils_1.generateToken)(jwtPayload, config_1.default.jwt_refresh_secret, config_1.default.jwt_refresh_expires_in);
+    // 9. Return response
+    return {
+        accessToken,
+        refreshToken,
+        userInfo: {
+            username: res.username,
+            email: res.email,
+            role: res.role,
+            photoURL: res.photoURL,
+            isBlocked: res.isBlocked,
+            status: res.status,
+            phoneNumber: res.phoneNumber,
+        },
+    };
 };
 // Helper to safely build a case-insensitive exact-match RegExp from arbitrary input
 const escapeRegExp = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 /**
- * Allow login using either username OR email + password.
- * - Accepts payload.email or payload.username or payload.identifier (preferred generic name).
- * - Performs case-insensitive lookup for both username and email.
- */
+* Allow login using either username OR email + password.
+* - Accepts payload.email or payload.username or payload.identifier (preferred generic name).
+* - Performs case-insensitive lookup for both username and email.
+*/
 const loginFunc = async (payload) => {
     const session = await mongoose_1.default.startSession();
     session.startTransaction();
@@ -75,6 +130,11 @@ const loginFunc = async (payload) => {
             id: user._id,
             email: user?.email,
             role: user?.role,
+            isBlocked: user?.isBlocked,
+            isActive: user?.isActive,
+            subscriptionPlan: user?.subscriptionPlan,
+            status: user?.status,
+            photoURL: user?.photoURL,
         };
         const accessToken = (0, auth_utils_1.generateToken)(jwtPayload, config_1.default.jwt_access_secret, config_1.default.jwt_access_expires_in);
         const refreshToken = (0, auth_utils_1.generateToken)(jwtPayload, config_1.default.jwt_refresh_secret, config_1.default.jwt_refresh_expires_in);
@@ -97,7 +157,6 @@ const loginFunc = async (payload) => {
         throw error;
     }
 };
-exports.loginFunc = loginFunc;
 const getAllUsersFunc = async () => {
     const users = await auth_model_1.Signup.find();
     return users;
@@ -179,7 +238,7 @@ const updateNameFunc = async (payload) => {
 };
 exports.authService = {
     signupFunc,
-    loginFunc: exports.loginFunc,
+    loginFunc,
     getAllUsersFunc,
     statusFuc,
     updatePasswordFunc,
