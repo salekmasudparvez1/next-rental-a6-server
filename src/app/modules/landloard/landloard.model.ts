@@ -23,11 +23,26 @@ const CommentSchema = new Schema(
   { timestamps: true, _id: false },
 );
 
+// Location Schema
+const LocationSchema = new Schema(
+  {
+    division: { type: String, required: true, trim: true },
+    district: { type: String, required: true, trim: true },
+    subDistrict: { type: String, required: true, trim: true },
+    streetAddress: { type: String, required: true, trim: true },
+    map: {
+      lat: { type: Number, required: true },
+      lng: { type: Number, required: true },
+    },
+  },
+  { _id: false },
+);
+
 // Main Rental House Schema
 const RentalHouseSchema = new Schema<IRentalHouse>(
   {
     title: { type: String, required: true, trim: true },
-    location: { type: String, required: true, trim: true },
+    location: { type: LocationSchema, required: true },
     description: { type: String, required: true },
     rentAmount: { type: Number, required: true },
     bedroomNumber: { type: Number, required: true },

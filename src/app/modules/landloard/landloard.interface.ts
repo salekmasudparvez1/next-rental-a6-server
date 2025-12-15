@@ -11,9 +11,20 @@ export interface IComment {
   rating: number;
 }
 
+export interface ILocation {
+  division: string;
+  district: string;
+  subDistrict: string;
+  streetAddress: string;
+  map: {
+    lat: number;
+    lng: number;
+  };
+}
+
 export interface IRentalHouse {
   title: string;
-  location: string;
+  location: ILocation;
   description: string;
   rentAmount: number;
   bedroomNumber: number;

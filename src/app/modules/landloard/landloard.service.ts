@@ -28,14 +28,16 @@ const createPropertiesFunc = async (data: any, files: Express.Multer.File[], use
     throw new AppError(StatusCodes.NOT_FOUND, 'Landlord not found!');
   }
   const postData = {
-    rentalHouseLocation: data?.rentalHouseLocation,
+    title: data?.title,
+    location: data?.location,
+    features: data?.features,
     description: data?.description,
     rentAmount: data?.rentAmount,
     landloardId: findLandloard?._id,
     bedroomNumber: data?.bedroomNumber,
-    features: data?.features,
-    comments: data?.comments
-
+    comments: data?.comments,
+    status: data?.status || 'available',
+    isPublished: data?.isPublished ?? false
   }
   // Create property with data and image URLs
   const total = {
@@ -47,6 +49,7 @@ const createPropertiesFunc = async (data: any, files: Express.Multer.File[], use
 
   return result;
 };
+
 const getAllPropertiesFunc = async (req: Request) => {
   const userId = (req as Request & { userId: string }).userId;
   const properties = await RentalHouseModel.find({ landloardId: userId });
@@ -81,12 +84,15 @@ const updatePropertiesFunc = async (req: Request) => {
   }
   // step-4 update fields valu which is need only
   const updateData: any = {};
-  if (data.rentalHouseLocation) updateData.rentalHouseLocation = data.rentalHouseLocation;
+  if (data.title) updateData.title = data.title;
+  if (data.location) updateData.location = data.location;
   if (data.description) updateData.description = data.description;
   if (data.rentAmount !== undefined) updateData.rentAmount = data.rentAmount;
   if (data.bedroomNumber !== undefined) updateData.bedroomNumber = data.bedroomNumber;
   if (data.features) updateData.features = data.features;
   if (data.comments) updateData.comments = data.comments;
+  if (data.status) updateData.status = data.status;
+  if (data.isPublished !== undefined) updateData.isPublished = data.isPublished;
   // Add new images to existing images (or replace if you prefer)
 
   if (imagesUrls.length > 0) {

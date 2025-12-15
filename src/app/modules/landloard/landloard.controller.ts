@@ -11,7 +11,6 @@ import sendResponse from "../../utils/sendResponse";
 const createProperties = catchAsync(async (req: Request, res: Response) => {
   // Parse the data field from form-data
   const data = JSON.parse(req.body?.data);
-
   // Get uploaded files
   const files = req.files as Express.Multer.File[];
 

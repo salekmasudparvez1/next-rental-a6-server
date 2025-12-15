@@ -18,16 +18,29 @@ export const landlordIdSchema = z.string().refine(
   (val) => /^[0-9a-fA-F]{24}$/.test(val),
   { message: "Invalid MongoDB ObjectId" }
 );
+
+// Location Schema
+export const LocationZodSchema = z.object({
+  division: z.string().min(1, "Division is required"),
+  district: z.string().min(1, "District is required"),
+  subDistrict: z.string().min(1, "Sub-district is required"),
+  streetAddress: z.string().min(1, "Street address is required"),
+  map: z.object({
+    lat: z.number().min(-90).max(90, "Latitude must be between -90 and 90"),
+    lng: z.number().min(-180).max(180, "Longitude must be between -180 and 180"),
+  }),
+});
+
 // Rental House — Create Schema
 export const RentalHouseCreateZodSchema = z.object({
   title: z.string().min(2, "Title is required"),
-  location: z.string().min(2, "Location is required"),
+  rentalHouseLocation: LocationZodSchema,
   description: z.string().min(5, "Description must be at least 5 characters"),
   status: z.enum(["available", "rented", "maintenance"]).default("available"),
   isPublished: z.boolean().default(false).optional(),
   landloardId: landlordIdSchema,
   rentAmount: z.number().positive("Rent must be a positive number"),
-  images: z.array(z.string().url("Each image must be a valid URL")).optional(),
+  images: z.array(z.string().url("Each image must be a valid URL")).max(4, "A maximum of 4 images are allowed").optional(),
   bedroomNumber: z.number().min(1).max(20, "Bedrooms must be between 1–20"),
   features: z.array(FeatureZodSchema).optional(),
   comments: z.array(CommentZodSchema).optional(),
