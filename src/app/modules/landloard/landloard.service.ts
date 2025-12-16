@@ -52,8 +52,35 @@ const createPropertiesFunc = async (data: any, files: Express.Multer.File[], use
 
 const getAllPropertiesFunc = async (req: Request) => {
   const userId = (req as Request & { userId: string }).userId;
-  const properties = await RentalHouseModel.find({ landloardId: userId });
-  return properties;
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 10;
+  const skip = (page - 1) * limit;
+  const total = await RentalHouseModel.countDocuments({ landloardId: userId });
+  const properties = await RentalHouseModel.find({ landloardId: userId }).skip(skip).limit(limit);
+  return {
+    data: properties,
+    meta: {
+      page,
+      limit,
+      total,
+    }
+  };
+}
+const getSinglePropertyFunc = async (req: Request) => {
+  const id = req.params.id;
+  const userId = (req as Request & { userId: string }).userId;
+
+  //step-1 validation check
+  const propertyInfo = await RentalHouseModel.findById(id)
+
+  if (!propertyInfo) {
+    throw new AppError(StatusCodes.NOT_FOUND, 'Property not found!');
+  }
+  if (userId.toString() !== propertyInfo?.landloardId?.toString()) {
+    throw new AppError(StatusCodes.FORBIDDEN, 'You are not authorized to view this property!');
+  }
+
+  return propertyInfo;
 }
 const updatePropertiesFunc = async (req: Request) => {
   // get data 
@@ -62,8 +89,15 @@ const updatePropertiesFunc = async (req: Request) => {
   const files = req?.files as Express.Multer.File[];
   const userId = (req as Request & { userId: string }).userId
 
+  console.log('updatePropertiesFunc - id:', id);
+  console.log('updatePropertiesFunc - data:', data);
+  console.log('updatePropertiesFunc - files:', files);
+  console.log('updatePropertiesFunc - userId:', userId);
+
   //step-1 validation check
   const propertyInfo = await RentalHouseModel.findById(id)
+
+  console.log('updatePropertiesFunc - propertyInfo:', propertyInfo);
 
   if (!propertyInfo) {
     throw new AppError(StatusCodes.NOT_FOUND, 'Property not found!');
@@ -79,13 +113,25 @@ const updatePropertiesFunc = async (req: Request) => {
         `property-${Date.now()}-${file.originalname}`,
         file.buffer,
       );
+      console.log('updatePropertiesFunc - uploaded secure_url:', secure_url);
       imagesUrls.push(secure_url);
     }
   }
+  console.log('updatePropertiesFunc - imagesUrls:', imagesUrls);
+
   // step-4 update fields valu which is need only
   const updateData: any = {};
   if (data.title) updateData.title = data.title;
-  if (data.location) updateData.location = data.location;
+  if (data.location) {
+    // Merge incoming location with existing to support partial updates
+    updateData.location = {
+      ...propertyInfo.location,
+      ...data.location,
+      map: data.location.map 
+        ? { ...propertyInfo.location.map, ...data.location.map }
+        : propertyInfo.location.map,
+    };
+  }
   if (data.description) updateData.description = data.description;
   if (data.rentAmount !== undefined) updateData.rentAmount = data.rentAmount;
   if (data.bedroomNumber !== undefined) updateData.bedroomNumber = data.bedroomNumber;
@@ -100,12 +146,16 @@ const updatePropertiesFunc = async (req: Request) => {
     // OR to replace: updateData.images = imageUrls;
   }
 
+  console.log('updatePropertiesFunc - updateData:', updateData);
+
   // Update the property
   const result = await RentalHouseModel.findByIdAndUpdate(
     id,
     updateData,
     { new: true, runValidators: true }
   );
+
+  console.log('updatePropertiesFunc - result:', result);
 
   return result;
 
@@ -164,6 +214,7 @@ const updateRequestFunc = async (req: Request) => {
 export const landloardService = {
   createPropertiesFunc,
   getAllPropertiesFunc,
+  getSinglePropertyFunc,
   updatePropertiesFunc,
   deletePropertiesFunc,
   getAllRequestsFunc,

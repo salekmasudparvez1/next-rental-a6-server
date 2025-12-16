@@ -29,6 +29,7 @@ const createProperties = catchAsync(async (req: Request, res: Response) => {
 const getAllProperties = catchAsync(async (req: Request, res: Response) => {
 
 const result = await landloardService.getAllPropertiesFunc(req as Request);
+ 
 
   sendResponse(res, {
     success: true,
@@ -37,10 +38,23 @@ const result = await landloardService.getAllPropertiesFunc(req as Request);
     statusCode: StatusCodes.OK,
   });
 });
+const getSingleProperty = catchAsync(async (req: Request, res: Response) => {
+
+  const result = await landloardService.getSinglePropertyFunc(req as Request);
+
+    sendResponse(res, {
+      success: true,
+      message: 'Property retrieved successfully',
+      data: result,
+      statusCode: StatusCodes.OK,
+    });
+  });
 
 const updateProperties = catchAsync(async (req: Request, res: Response) => {
-  const result = await landloardService.updatePropertiesFunc(req as Request);
 
+  const result = await landloardService.updatePropertiesFunc(req as Request);
+ 
+  console.log(result);
   sendResponse(res, {
     success: true,
     message: 'Properties updated successfully',
@@ -90,6 +104,7 @@ export const landloardController = {
   updateProperties,
   deleteProperties,
   getAllRequests,
+  getSingleProperty,
   updateRequest
 };
 
