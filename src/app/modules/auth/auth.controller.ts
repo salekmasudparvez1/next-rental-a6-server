@@ -7,7 +7,7 @@ import config from '../../config';
 
 const signup = catchAsync(async (req: Request, res: Response) => {
   const getDoc = req.body;
-
+  //  console.log(getDoc);
   const payload = {
     ...getDoc,
     isBlocked: false,

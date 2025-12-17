@@ -13,6 +13,10 @@ tenentRouter.post('/requests',verifyTenant, validateRequest(TenantCreateZodSchem
 // List applications
 tenentRouter.get('/requests',verifyTenant, tenentController.listRequests);
 
+/*==get all properrty for public query==*/
+tenentRouter.get('/get-all',tenentController.getAllPropertiesPublic)
+tenentRouter.get('/get-all/:id',tenentController.getAllPropertiesPublic)
+
 // // Update status
 // tenentRouter.put('/request/:id',verifyLandLoard, validateRequest(TenantUpdateZodSchema), tenentController.updateRequest);
 

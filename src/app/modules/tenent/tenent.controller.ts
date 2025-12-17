@@ -26,14 +26,23 @@ const listRequests = catchAsync(async (req: Request, res: Response) => {
         statusCode: StatusCodes.OK,
     });
 }); 
- 
 
+const getAllPropertiesPublic = catchAsync(async (req: Request, res: Response) => {
+    
+    const result = await tenentService.getAllPropertiesPublicFunc(req as any);
+    sendResponse(res, {
+        success: true,
+        message: 'Landloard all post fetched successfully',
+        data: result,
+        statusCode: StatusCodes.OK,
+    });
+}); 
 
 
 
 export const tenentController = {
     createRequest,
     listRequests,
-   
+   getAllPropertiesPublic
    
 };

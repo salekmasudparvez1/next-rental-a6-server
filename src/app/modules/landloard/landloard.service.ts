@@ -89,15 +89,10 @@ const updatePropertiesFunc = async (req: Request) => {
   const files = req?.files as Express.Multer.File[];
   const userId = (req as Request & { userId: string }).userId
 
-  console.log('updatePropertiesFunc - id:', id);
-  console.log('updatePropertiesFunc - data:', data);
-  console.log('updatePropertiesFunc - files:', files);
-  console.log('updatePropertiesFunc - userId:', userId);
 
   //step-1 validation check
   const propertyInfo = await RentalHouseModel.findById(id)
 
-  console.log('updatePropertiesFunc - propertyInfo:', propertyInfo);
 
   if (!propertyInfo) {
     throw new AppError(StatusCodes.NOT_FOUND, 'Property not found!');
@@ -113,11 +108,11 @@ const updatePropertiesFunc = async (req: Request) => {
         `property-${Date.now()}-${file.originalname}`,
         file.buffer,
       );
-      console.log('updatePropertiesFunc - uploaded secure_url:', secure_url);
+    
       imagesUrls.push(secure_url);
     }
   }
-  console.log('updatePropertiesFunc - imagesUrls:', imagesUrls);
+
 
   // step-4 update fields valu which is need only
   const updateData: any = {};
@@ -146,7 +141,6 @@ const updatePropertiesFunc = async (req: Request) => {
     // OR to replace: updateData.images = imageUrls;
   }
 
-  console.log('updatePropertiesFunc - updateData:', updateData);
 
   // Update the property
   const result = await RentalHouseModel.findByIdAndUpdate(
@@ -155,7 +149,7 @@ const updatePropertiesFunc = async (req: Request) => {
     { new: true, runValidators: true }
   );
 
-  console.log('updatePropertiesFunc - result:', result);
+
 
   return result;
 

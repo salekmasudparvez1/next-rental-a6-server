@@ -19,7 +19,7 @@ const handleDuplicateError = (err: any): TGenericErrorResponse => {
 
   return {
     statusCode,
-    message: 'Invalid Email Address😡',
+    message: `Invalid Email or Phone Number😡`,
     errorSources,
   };
 };

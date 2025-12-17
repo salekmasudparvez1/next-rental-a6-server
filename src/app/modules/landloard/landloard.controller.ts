@@ -54,7 +54,7 @@ const updateProperties = catchAsync(async (req: Request, res: Response) => {
 
   const result = await landloardService.updatePropertiesFunc(req as Request);
  
-  console.log(result);
+
   sendResponse(res, {
     success: true,
     message: 'Properties updated successfully',
