@@ -8,7 +8,7 @@ const http_status_codes_1 = require("http-status-codes");
 const cloudinary_1 = require("../../config/cloudinary");
 const AppError_1 = __importDefault(require("../../errors/AppError"));
 const landloard_model_1 = require("./landloard.model");
-const auth_model_1 = require("../Auth/auth.model");
+const auth_model_1 = require("../auth/auth.model");
 const tenent_model_1 = require("../tenent/tenent.model");
 const createPropertiesFunc = async (data, files, userId) => {
     // Upload images to Cloudinary
@@ -24,13 +24,16 @@ const createPropertiesFunc = async (data, files, userId) => {
         throw new AppError_1.default(http_status_codes_1.StatusCodes.NOT_FOUND, 'Landlord not found!');
     }
     const postData = {
-        rentalHouseLocation: data?.rentalHouseLocation,
+        title: data?.title,
+        location: data?.location,
+        features: data?.features,
         description: data?.description,
         rentAmount: data?.rentAmount,
         landloardId: findLandloard?._id,
         bedroomNumber: data?.bedroomNumber,
-        features: data?.features,
-        comments: data?.comments
+        comments: data?.comments,
+        status: data?.status || 'available',
+        isPublished: data?.isPublished ?? false
     };
     // Create property with data and image URLs
     const total = {
@@ -42,8 +45,32 @@ const createPropertiesFunc = async (data, files, userId) => {
 };
 const getAllPropertiesFunc = async (req) => {
     const userId = req.userId;
-    const properties = await landloard_model_1.RentalHouseModel.find({ landloardId: userId });
-    return properties;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const total = await landloard_model_1.RentalHouseModel.countDocuments({ landloardId: userId });
+    const properties = await landloard_model_1.RentalHouseModel.find({ landloardId: userId }).skip(skip).limit(limit);
+    return {
+        data: properties,
+        meta: {
+            page,
+            limit,
+            total,
+        }
+    };
+};
+const getSinglePropertyFunc = async (req) => {
+    const id = req.params.id;
+    const userId = req.userId;
+    //step-1 validation check
+    const propertyInfo = await landloard_model_1.RentalHouseModel.findById(id);
+    if (!propertyInfo) {
+        throw new AppError_1.default(http_status_codes_1.StatusCodes.NOT_FOUND, 'Property not found!');
+    }
+    if (userId.toString() !== propertyInfo?.landloardId?.toString()) {
+        throw new AppError_1.default(http_status_codes_1.StatusCodes.FORBIDDEN, 'You are not authorized to view this property!');
+    }
+    return propertyInfo;
 };
 const updatePropertiesFunc = async (req) => {
     // get data 
@@ -69,8 +96,18 @@ const updatePropertiesFunc = async (req) => {
     }
     // step-4 update fields valu which is need only
     const updateData = {};
-    if (data.rentalHouseLocation)
-        updateData.rentalHouseLocation = data.rentalHouseLocation;
+    if (data.title)
+        updateData.title = data.title;
+    if (data.location) {
+        // Merge incoming location with existing to support partial updates
+        updateData.location = {
+            ...propertyInfo.location,
+            ...data.location,
+            map: data.location.map
+                ? { ...propertyInfo.location.map, ...data.location.map }
+                : propertyInfo.location.map,
+        };
+    }
     if (data.description)
         updateData.description = data.description;
     if (data.rentAmount !== undefined)
@@ -81,6 +118,10 @@ const updatePropertiesFunc = async (req) => {
         updateData.features = data.features;
     if (data.comments)
         updateData.comments = data.comments;
+    if (data.status)
+        updateData.status = data.status;
+    if (data.isPublished !== undefined)
+        updateData.isPublished = data.isPublished;
     // Add new images to existing images (or replace if you prefer)
     if (imagesUrls.length > 0) {
         updateData.images = [...propertyInfo.images, ...imagesUrls].slice(-4); // Append new images
@@ -134,6 +175,7 @@ const updateRequestFunc = async (req) => {
 exports.landloardService = {
     createPropertiesFunc,
     getAllPropertiesFunc,
+    getSinglePropertyFunc,
     updatePropertiesFunc,
     deletePropertiesFunc,
     getAllRequestsFunc,

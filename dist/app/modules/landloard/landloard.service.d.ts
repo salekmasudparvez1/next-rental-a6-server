@@ -6,11 +6,23 @@ export declare const landloardService: {
     } & {
         __v: number;
     }>;
-    getAllPropertiesFunc: (req: Request) => Promise<(import("mongoose").Document<unknown, {}, import("./landloard.interface").IRentalHouse, {}, import("mongoose").DefaultSchemaOptions> & import("./landloard.interface").IRentalHouse & {
+    getAllPropertiesFunc: (req: Request) => Promise<{
+        data: (import("mongoose").Document<unknown, {}, import("./landloard.interface").IRentalHouse, {}, import("mongoose").DefaultSchemaOptions> & import("./landloard.interface").IRentalHouse & {
+            _id: Types.ObjectId;
+        } & {
+            __v: number;
+        })[];
+        meta: {
+            page: number;
+            limit: number;
+            total: number;
+        };
+    }>;
+    getSinglePropertyFunc: (req: Request) => Promise<import("mongoose").Document<unknown, {}, import("./landloard.interface").IRentalHouse, {}, import("mongoose").DefaultSchemaOptions> & import("./landloard.interface").IRentalHouse & {
         _id: Types.ObjectId;
     } & {
         __v: number;
-    })[]>;
+    }>;
     updatePropertiesFunc: (req: Request) => Promise<(import("mongoose").Document<unknown, {}, import("./landloard.interface").IRentalHouse, {}, import("mongoose").DefaultSchemaOptions> & import("./landloard.interface").IRentalHouse & {
         _id: Types.ObjectId;
     } & {

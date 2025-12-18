@@ -28,8 +28,18 @@ const listRequests = (0, catchAsync_1.default)(async (req, res) => {
         statusCode: http_status_codes_1.StatusCodes.OK,
     });
 });
+const getAllPropertiesPublic = (0, catchAsync_1.default)(async (req, res) => {
+    const result = await tenent_service_1.tenentService.getAllPropertiesPublicFunc(req);
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        message: 'Landloard all post fetched successfully',
+        data: result,
+        statusCode: http_status_codes_1.StatusCodes.OK,
+    });
+});
 exports.tenentController = {
     createRequest,
     listRequests,
+    getAllPropertiesPublic
 };
 //# sourceMappingURL=tenent.controller.js.map

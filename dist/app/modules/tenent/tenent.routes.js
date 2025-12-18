@@ -13,6 +13,9 @@ const tenentRouter = (0, express_1.Router)();
 tenentRouter.post('/requests', verifyTenant_1.default, (0, validateRequest_1.default)(tenent_validations_1.TenantCreateZodSchema), tenent_controller_1.tenentController.createRequest);
 // List applications
 tenentRouter.get('/requests', verifyTenant_1.default, tenent_controller_1.tenentController.listRequests);
+/*==get all properrty for public query==*/
+tenentRouter.get('/get-all', tenent_controller_1.tenentController.getAllPropertiesPublic);
+tenentRouter.get('/get-all/:id', tenent_controller_1.tenentController.getAllPropertiesPublic);
 // // Update status
 // tenentRouter.put('/request/:id',verifyLandLoard, validateRequest(TenantUpdateZodSchema), tenentController.updateRequest);
 exports.default = tenentRouter;

@@ -30,6 +30,7 @@ const listRequests = catchAsync(async (req: Request, res: Response) => {
 const getAllPropertiesPublic = catchAsync(async (req: Request, res: Response) => {
     
     const result = await tenentService.getAllPropertiesPublicFunc(req as any);
+    console.log(result);
     sendResponse(res, {
         success: true,
         message: 'Landloard all post fetched successfully',

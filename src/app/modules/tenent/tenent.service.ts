@@ -1,9 +1,10 @@
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { TenantApplicationModel } from './tenent.model';
 import AppError from '../../errors/AppError';
 import { StatusCodes } from 'http-status-codes';
 import { Request } from 'express';
 import { RentalHouseModel } from '../landloard/landloard.model';
+import { Signup } from '../auth/auth.model';
 
 const createRequestFunc = async (
   req: Request,
@@ -39,6 +40,7 @@ const listRequestsFunc = async (req: Request) => {
 
 interface RequestWithUser extends Request {
   query: { id?: string; page?: string; limit?: string };
+  userId?: Types.ObjectId;
 }
 
 export const getAllPropertiesPublicFunc = async (req: RequestWithUser) => {
@@ -46,18 +48,45 @@ export const getAllPropertiesPublicFunc = async (req: RequestWithUser) => {
   const page = req.query.page ? Number(req.query.page) : 1;
   const limit = req.query.limit ? Number(req.query.limit) : 10;
   const skip = (page - 1) * limit;
+  const getuserId = req?.userId;
+  console.log("getuserId", getuserId);
 
-  // If postId exists, fetch single property
+  // If postId exists ==> fetch single property --- none login
+
   if (postId && postId !== "undefined" && postId.trim() !== "") {
-    const property = await RentalHouseModel.findOne({ _id: postId });
-    return {
-      data: property ? [property] : [],
-      meta: {
-        page: 1,
-        limit: 1,
-        total: property ? 1 : 0,
-      },
-    };
+    console.log('click out');
+    if (getuserId) {
+      
+      const property = await RentalHouseModel.findOne({ _id:new mongoose.Types.ObjectId(postId)});
+      const findLandloard = await Signup.findById(property?.landloardId).select('-password');
+      const propertyWithLandloard = property ? {
+        ...property.toObject(),
+        landloardDetails: findLandloard,
+      } : null;
+    
+      return {
+        data: propertyWithLandloard ? [propertyWithLandloard] : [],
+        meta: {
+          page: 1,
+          limit: 1,
+          total: property ? 1 : 0,
+        },
+      };
+
+    } else {
+      const property = await RentalHouseModel.findOne({ _id: new mongoose.Types.ObjectId(postId) }).select('-landloardId');
+      console.log('click logout -after');
+      return {
+        data: property ? [property] : [],
+        meta: {
+          page: 1,
+          limit: 1,
+          total: property ? 1 : 0,
+        },
+      };
+    }
+
+
   }
 
   // Otherwise fetch paginated properties

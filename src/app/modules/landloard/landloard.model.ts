@@ -48,7 +48,7 @@ const RentalHouseSchema = new Schema<IRentalHouse>(
     bedroomNumber: { type: Number, required: true },
     status: { type: String, enum: ["available", "rented", "maintenance"], default: "available" },
     isPublished: { type: Boolean, default: false },
-    landloardId: { type: Types.ObjectId, required: true, ref: 'users' },
+    landloardId: { type:  mongoose.Schema.Types.ObjectId, required: true },
     features: { type: [FeatureSchema], required: false },
     comments: { type: [CommentSchema], required: false },
     images: { type: [String], required: false },

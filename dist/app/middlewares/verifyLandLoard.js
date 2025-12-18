@@ -8,7 +8,7 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const config_1 = __importDefault(require("../config"));
 const AppError_1 = __importDefault(require("../errors/AppError"));
 const catchAsync_1 = __importDefault(require("../utils/catchAsync"));
-const auth_model_1 = require("../modules/Auth/auth.model");
+const auth_model_1 = require("../modules/auth/auth.model");
 const verifyLandLoard = (0, catchAsync_1.default)(async (req, res, next) => {
     const bearerToken = req.headers.authorization;
     const token = bearerToken?.split(" ")[1];

@@ -51,12 +51,26 @@ const CommentSchema = new mongoose_1.Schema({
     comment: { type: String, required: true, trim: true },
     rating: { type: Number, min: 1, max: 5, default: 3 },
 }, { timestamps: true, _id: false });
+// Location Schema
+const LocationSchema = new mongoose_1.Schema({
+    division: { type: String, required: true, trim: true },
+    district: { type: String, required: true, trim: true },
+    subDistrict: { type: String, required: true, trim: true },
+    streetAddress: { type: String, required: true, trim: true },
+    map: {
+        lat: { type: Number, required: true },
+        lng: { type: Number, required: true },
+    },
+}, { _id: false });
 // Main Rental House Schema
 const RentalHouseSchema = new mongoose_1.Schema({
-    rentalHouseLocation: { type: String, required: true, trim: true },
+    title: { type: String, required: true, trim: true },
+    location: { type: LocationSchema, required: true },
     description: { type: String, required: true },
     rentAmount: { type: Number, required: true },
     bedroomNumber: { type: Number, required: true },
+    status: { type: String, enum: ["available", "rented", "maintenance"], default: "available" },
+    isPublished: { type: Boolean, default: false },
     landloardId: { type: mongoose_1.Types.ObjectId, required: true, ref: 'users' },
     features: { type: [FeatureSchema], required: false },
     comments: { type: [CommentSchema], required: false },

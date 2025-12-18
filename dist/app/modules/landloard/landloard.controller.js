@@ -31,6 +31,15 @@ const getAllProperties = (0, catchAsync_1.default)(async (req, res) => {
         statusCode: http_status_codes_1.StatusCodes.OK,
     });
 });
+const getSingleProperty = (0, catchAsync_1.default)(async (req, res) => {
+    const result = await landloard_service_1.landloardService.getSinglePropertyFunc(req);
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        message: 'Property retrieved successfully',
+        data: result,
+        statusCode: http_status_codes_1.StatusCodes.OK,
+    });
+});
 const updateProperties = (0, catchAsync_1.default)(async (req, res) => {
     const result = await landloard_service_1.landloardService.updatePropertiesFunc(req);
     (0, sendResponse_1.default)(res, {
@@ -74,6 +83,7 @@ exports.landloardController = {
     updateProperties,
     deleteProperties,
     getAllRequests,
+    getSingleProperty,
     updateRequest
 };
 //# sourceMappingURL=landloard.controller.js.map

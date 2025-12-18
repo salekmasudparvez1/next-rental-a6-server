@@ -8,13 +8,26 @@ export interface IComment {
     comment: string;
     rating: number;
 }
+export interface ILocation {
+    division: string;
+    district: string;
+    subDistrict: string;
+    streetAddress: string;
+    map: {
+        lat: number;
+        lng: number;
+    };
+}
 export interface IRentalHouse {
-    rentalHouseLocation: string;
+    title: string;
+    location: ILocation;
     description: string;
     rentAmount: number;
     bedroomNumber: number;
     landloardId: Types.ObjectId;
     images: string[];
+    status: "available" | "rented" | "maintenance";
+    isPublished: boolean;
     features?: IFeature[];
     comments?: IComment[];
 }
