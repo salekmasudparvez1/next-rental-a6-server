@@ -6,23 +6,37 @@ import { Request } from 'express';
 import { RentalHouseModel } from '../landloard/landloard.model';
 import { Signup } from '../auth/auth.model';
 
-const createRequestFunc = async (
-  req: Request,
-  payload: { rentalHouseId: string; status?: 'pending' | 'approve' | 'reject' }
+const createRequestFunc = async (req: Request, payload: {
+  id: string; date: {
+    from: Date;
+    to: Date;
+  };
+}
 ) => {
   const rawUserId = (req as any).userId;
   const tenantId = typeof rawUserId === 'string' ? new Types.ObjectId(rawUserId) : rawUserId;
-  const getLandloardId = await RentalHouseModel.findById(payload.rentalHouseId).select('landloardId');
+  const getLandloardId = await RentalHouseModel.findById(payload?.id).select('landloardId');
 
   if (!getLandloardId) {
     throw new AppError(StatusCodes.NOT_FOUND, 'Rental house not found to get landloardId!');
   }
-  const doc = await TenantApplicationModel.create({
-    tenantId,
-    rentalHouseId: new Types.ObjectId(payload.rentalHouseId),
-    landloardId: getLandloardId.landloardId,
-    status: payload.status ?? 'pending',
+  const isExisting = await TenantApplicationModel.findOne({
+    tenantId: tenantId,
+    rentalHouseId: new Types.ObjectId(payload?.id),
   });
+  
+  if (isExisting) {
+    throw new AppError(StatusCodes.CONFLICT, 'You have already applied for this rental house!');
+  }
+  const createDoc = {
+    tenantId,
+    rentalHouseId: new Types.ObjectId(payload?.id),
+    landloardId: getLandloardId?.landloardId,
+    status: 'pending',
+    date: payload?.date,
+  }
+
+  const doc = await TenantApplicationModel.create(createDoc);
   return doc;
 };
 
@@ -36,6 +50,17 @@ const listRequestsFunc = async (req: Request) => {
 
   return requests;
 };
+const getSingleRequestFunc = async (req: Request) => {
+  const rawUserId = (req as any).userId;
+  const userId = typeof rawUserId === 'string' ? new Types.ObjectId(rawUserId) : rawUserId;
+  const requestRentalHouseId = req.params.id;
+  const rentalHouseId = typeof requestRentalHouseId === 'string' ? new Types.ObjectId(requestRentalHouseId) : requestRentalHouseId;
+
+
+  const request = await TenantApplicationModel.findOne({ rentalHouseId: new mongoose.Types.ObjectId(rentalHouseId), tenantId: new mongoose.Types.ObjectId(userId) }).lean();
+ 
+  return request;
+}
 
 
 interface RequestWithUser extends Request {
@@ -49,21 +74,21 @@ export const getAllPropertiesPublicFunc = async (req: RequestWithUser) => {
   const limit = req.query.limit ? Number(req.query.limit) : 10;
   const skip = (page - 1) * limit;
   const getuserId = req?.userId;
-  console.log("getuserId", getuserId);
+ 
 
   // If postId exists ==> fetch single property --- none login
 
   if (postId && postId !== "undefined" && postId.trim() !== "") {
-    console.log('click out');
+   
     if (getuserId) {
-      
-      const property = await RentalHouseModel.findOne({ _id:new mongoose.Types.ObjectId(postId)});
+
+      const property = await RentalHouseModel.findOne({ _id: new mongoose.Types.ObjectId(postId) });
       const findLandloard = await Signup.findById(property?.landloardId).select('-password');
       const propertyWithLandloard = property ? {
         ...property.toObject(),
         landloardDetails: findLandloard,
       } : null;
-    
+
       return {
         data: propertyWithLandloard ? [propertyWithLandloard] : [],
         meta: {
@@ -75,7 +100,7 @@ export const getAllPropertiesPublicFunc = async (req: RequestWithUser) => {
 
     } else {
       const property = await RentalHouseModel.findOne({ _id: new mongoose.Types.ObjectId(postId) }).select('-landloardId');
-      console.log('click logout -after');
+     
       return {
         data: property ? [property] : [],
         meta: {
@@ -108,8 +133,7 @@ export const getAllPropertiesPublicFunc = async (req: RequestWithUser) => {
 export const tenentService = {
   createRequestFunc,
   listRequestsFunc,
+  getSingleRequestFunc,
   getAllPropertiesPublicFunc
-
-
 };
 

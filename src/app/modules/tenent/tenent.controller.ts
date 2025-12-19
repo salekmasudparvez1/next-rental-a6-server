@@ -5,9 +5,10 @@ import { tenentService } from './tenent.service';
 import { StatusCodes } from 'http-status-codes';
 
 const createRequest = catchAsync(async (req: Request, res: Response) => {
+   
     const data = req.body?.data ? JSON.parse(req.body.data) : req.body;
-    const { rentalHouseId, status } = data;
-    const result = await tenentService.createRequestFunc(req, { rentalHouseId, status });
+    const { id, date } = data;
+    const result = await tenentService.createRequestFunc(req, { id, date });
     sendResponse(res, {
         success: true,
         message: 'Tenant application created',
@@ -27,10 +28,22 @@ const listRequests = catchAsync(async (req: Request, res: Response) => {
     });
 }); 
 
+const getSingleRequest = catchAsync(async (req: Request, res: Response) => {
+    
+    const result = await tenentService.getSingleRequestFunc(req as any);
+  
+    sendResponse(res, {
+        success: true,
+        message: 'Tenant single application fetched',
+        data: result,
+        statusCode: StatusCodes.OK,
+    });
+});
+
 const getAllPropertiesPublic = catchAsync(async (req: Request, res: Response) => {
     
     const result = await tenentService.getAllPropertiesPublicFunc(req as any);
-    console.log(result);
+  
     sendResponse(res, {
         success: true,
         message: 'Landloard all post fetched successfully',
@@ -44,6 +57,7 @@ const getAllPropertiesPublic = catchAsync(async (req: Request, res: Response) =>
 export const tenentController = {
     createRequest,
     listRequests,
+    getSingleRequest,
    getAllPropertiesPublic
    
 };

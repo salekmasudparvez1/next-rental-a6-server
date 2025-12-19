@@ -5,4 +5,8 @@ export interface ITenantApplication {
   rentalHouseId: Types.ObjectId; // references rentalHouses._id
   landloardId: Types.ObjectId; // references users._id with role 'landloard'
   status: 'pending' | 'approve' | 'reject';
+  date:{
+    from:Date;
+    to:Date;
+  }
 }

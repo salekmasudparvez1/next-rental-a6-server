@@ -12,6 +12,7 @@ tenentRouter.post('/requests',verifyTenant, validateRequest(TenantCreateZodSchem
 
 // List applications
 tenentRouter.get('/requests',verifyTenant, tenentController.listRequests);
+tenentRouter.get('/request/:id',verifyTenant, tenentController.getSingleRequest);
 
 /*==get all properrty for public query==*/
 tenentRouter.get('/get-all',verifyLogin,tenentController.getAllPropertiesPublic)

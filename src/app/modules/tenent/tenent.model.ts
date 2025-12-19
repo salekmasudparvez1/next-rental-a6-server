@@ -11,6 +11,10 @@ const TenantApplicationSchema = new Schema<ITenantApplication>({
   rentalHouseId: { type: Schema.Types.ObjectId, required: true, ref: 'rentalHouses' },
   landloardId: { type: Schema.Types.ObjectId, required: true, ref: 'users' },
   status: { type: String, enum: ['pending', 'approve', 'reject'], default: 'pending', required: true },
+  date: {
+    from: { type: Date, required: true },
+    to: { type: Date, required: true }
+  }
 }, {
   timestamps: true,
   versionKey: false,
