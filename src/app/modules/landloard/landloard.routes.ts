@@ -32,6 +32,11 @@ landloardRouter.put('/listings/:id',
 landloardRouter.delete('/listings/:id',
     verifyLandLoard,
     landloardController.deleteProperties);
+
+/*--------------------------------*/
+/*------this is request part-------*/
+/*--------------------------------*/
+
 //tenant requests part
 landloardRouter.get('/requests',
     verifyLandLoard,

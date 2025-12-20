@@ -177,7 +177,7 @@ const getAllRequestsFunc = async (req: Request) => {
   const userId = (req as Request & { userId: string }).userId;
   const houses = await TenantApplicationModel
     .find({ landloardId: userId })
-    .populate({ path: 'tenantId', model: Signup as any })
+    .populate({ path: 'tenantId', model: Signup as any ,select:"-password -__v"})
     .populate({ path: 'rentalHouseId', model: RentalHouseModel as any });
   return houses;
 
