@@ -1,4 +1,4 @@
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { Request } from 'express';
 interface RequestWithUser extends Request {
     query: {
@@ -6,9 +6,36 @@ interface RequestWithUser extends Request {
         page?: string;
         limit?: string;
     };
+    userId?: Types.ObjectId;
 }
 export declare const getAllPropertiesPublicFunc: (req: RequestWithUser) => Promise<{
-    data: (import("mongoose").Document<unknown, {}, import("../landloard/landloard.interface").IRentalHouse, {}, import("mongoose").DefaultSchemaOptions> & import("../landloard/landloard.interface").IRentalHouse & {
+    data: {
+        landloardDetails: (mongoose.Document<unknown, {}, import("../auth/auth.interface").IUserCreate, {}, mongoose.DefaultSchemaOptions> & import("../auth/auth.interface").IUserCreate & Required<{
+            _id: Types.ObjectId;
+        }> & {
+            __v: number;
+        }) | null;
+        title: string;
+        location: import("../landloard/landloard.interface").ILocation;
+        description: string;
+        rentAmount: number;
+        bedroomNumber: number;
+        landloardId: Types.ObjectId;
+        images: string[];
+        status: "available" | "rented" | "maintenance";
+        isPublished: boolean;
+        features?: import("../landloard/landloard.interface").IFeature[];
+        comments?: import("../landloard/landloard.interface").IComment[];
+        _id: Types.ObjectId;
+        __v: number;
+    }[];
+    meta: {
+        page: number;
+        limit: number;
+        total: number;
+    };
+} | {
+    data: (mongoose.Document<unknown, {}, import("../landloard/landloard.interface").IRentalHouse, {}, mongoose.DefaultSchemaOptions> & import("../landloard/landloard.interface").IRentalHouse & {
         _id: Types.ObjectId;
     } & {
         __v: number;
@@ -21,9 +48,12 @@ export declare const getAllPropertiesPublicFunc: (req: RequestWithUser) => Promi
 }>;
 export declare const tenentService: {
     createRequestFunc: (req: Request, payload: {
-        rentalHouseId: string;
-        status?: "pending" | "approve" | "reject";
-    }) => Promise<import("mongoose").Document<unknown, {}, import("./tenent.interface").ITenantApplication, {}, import("mongoose").DefaultSchemaOptions> & import("./tenent.interface").ITenantApplication & {
+        id: string;
+        date: {
+            from: Date;
+            to: Date;
+        };
+    }) => Promise<mongoose.Document<unknown, {}, import("./tenent.interface").ITenantApplication, {}, mongoose.DefaultSchemaOptions> & import("./tenent.interface").ITenantApplication & {
         _id: Types.ObjectId;
     } & {
         __v: number;
@@ -33,8 +63,39 @@ export declare const tenentService: {
     } & {
         __v: number;
     })[]>;
+    getSingleRequestFunc: (req: Request) => Promise<(import("./tenent.interface").ITenantApplication & {
+        _id: Types.ObjectId;
+    } & {
+        __v: number;
+    }) | null>;
     getAllPropertiesPublicFunc: (req: RequestWithUser) => Promise<{
-        data: (import("mongoose").Document<unknown, {}, import("../landloard/landloard.interface").IRentalHouse, {}, import("mongoose").DefaultSchemaOptions> & import("../landloard/landloard.interface").IRentalHouse & {
+        data: {
+            landloardDetails: (mongoose.Document<unknown, {}, import("../auth/auth.interface").IUserCreate, {}, mongoose.DefaultSchemaOptions> & import("../auth/auth.interface").IUserCreate & Required<{
+                _id: Types.ObjectId;
+            }> & {
+                __v: number;
+            }) | null;
+            title: string;
+            location: import("../landloard/landloard.interface").ILocation;
+            description: string;
+            rentAmount: number;
+            bedroomNumber: number;
+            landloardId: Types.ObjectId;
+            images: string[];
+            status: "available" | "rented" | "maintenance";
+            isPublished: boolean;
+            features?: import("../landloard/landloard.interface").IFeature[];
+            comments?: import("../landloard/landloard.interface").IComment[];
+            _id: Types.ObjectId;
+            __v: number;
+        }[];
+        meta: {
+            page: number;
+            limit: number;
+            total: number;
+        };
+    } | {
+        data: (mongoose.Document<unknown, {}, import("../landloard/landloard.interface").IRentalHouse, {}, mongoose.DefaultSchemaOptions> & import("../landloard/landloard.interface").IRentalHouse & {
             _id: Types.ObjectId;
         } & {
             __v: number;

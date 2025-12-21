@@ -152,7 +152,7 @@ const getAllRequestsFunc = async (req) => {
     const userId = req.userId;
     const houses = await tenent_model_1.TenantApplicationModel
         .find({ landloardId: userId })
-        .populate({ path: 'tenantId', model: auth_model_1.Signup })
+        .populate({ path: 'tenantId', model: auth_model_1.Signup, select: "-password -__v" })
         .populate({ path: 'rentalHouseId', model: landloard_model_1.RentalHouseModel });
     return houses;
 };

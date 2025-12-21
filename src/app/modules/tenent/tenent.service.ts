@@ -24,7 +24,7 @@ const createRequestFunc = async (req: Request, payload: {
     tenantId: tenantId,
     rentalHouseId: new Types.ObjectId(payload?.id),
   });
-  
+
   if (isExisting) {
     throw new AppError(StatusCodes.CONFLICT, 'You have already applied for this rental house!');
   }
@@ -46,7 +46,14 @@ const listRequestsFunc = async (req: Request) => {
 
   // Extra visibility while debugging
   const all = await TenantApplicationModel.find().lean();
-  const requests = await TenantApplicationModel.find({ tenantId: userId }).lean();
+  const requests = await TenantApplicationModel.find({ tenantId: userId }).populate({
+    path: "rentalHouseId",
+    model: RentalHouseModel
+  }).populate({
+    path: "landloardId",
+    select: "-password",
+    model: Signup
+  }).lean();
 
   return requests;
 };
@@ -57,8 +64,15 @@ const getSingleRequestFunc = async (req: Request) => {
   const rentalHouseId = typeof requestRentalHouseId === 'string' ? new Types.ObjectId(requestRentalHouseId) : requestRentalHouseId;
 
 
-  const request = await TenantApplicationModel.findOne({ rentalHouseId: new mongoose.Types.ObjectId(rentalHouseId), tenantId: new mongoose.Types.ObjectId(userId) }).lean();
- 
+  const request = await TenantApplicationModel.findOne({ rentalHouseId: new mongoose.Types.ObjectId(rentalHouseId), tenantId: new mongoose.Types.ObjectId(userId) }).populate({
+    path: "rentalHouseId",
+    model: RentalHouseModel
+  }).populate({
+    path: "landloardId",
+    select: "-password",
+    model: Signup
+  }).lean();
+
   return request;
 }
 
@@ -74,12 +88,12 @@ export const getAllPropertiesPublicFunc = async (req: RequestWithUser) => {
   const limit = req.query.limit ? Number(req.query.limit) : 10;
   const skip = (page - 1) * limit;
   const getuserId = req?.userId;
- 
+
 
   // If postId exists ==> fetch single property --- none login
 
   if (postId && postId !== "undefined" && postId.trim() !== "") {
-   
+
     if (getuserId) {
 
       const property = await RentalHouseModel.findOne({ _id: new mongoose.Types.ObjectId(postId) });
@@ -100,7 +114,7 @@ export const getAllPropertiesPublicFunc = async (req: RequestWithUser) => {
 
     } else {
       const property = await RentalHouseModel.findOne({ _id: new mongoose.Types.ObjectId(postId) }).select('-landloardId');
-     
+
       return {
         data: property ? [property] : [],
         meta: {

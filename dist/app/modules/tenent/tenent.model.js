@@ -42,13 +42,17 @@ const config_1 = __importDefault(require("../../config"));
 const findBasaDB = mongoose_1.default.connection.useDb(config_1.default.database_name);
 const TenantApplicationSchema = new mongoose_1.Schema({
     tenantId: { type: mongoose_1.Schema.Types.ObjectId, required: true, ref: 'users' },
-    rentalHouseId: { type: mongoose_1.Schema.Types.ObjectId, required: true, ref: 'rentalHouses' },
+    rentalHouseId: { type: mongoose_1.Schema.Types.ObjectId, required: true, ref: 'RentalHouses' },
     landloardId: { type: mongoose_1.Schema.Types.ObjectId, required: true, ref: 'users' },
     status: { type: String, enum: ['pending', 'approve', 'reject'], default: 'pending', required: true },
+    date: {
+        from: { type: Date, required: true },
+        to: { type: Date, required: true }
+    }
 }, {
     timestamps: true,
     versionKey: false,
     collection: 'tenantRequests',
 });
-exports.TenantApplicationModel = findBasaDB.model('tenantRequests', TenantApplicationSchema);
+exports.TenantApplicationModel = findBasaDB.model('TenantRequests', TenantApplicationSchema);
 //# sourceMappingURL=tenent.model.js.map

@@ -11,7 +11,6 @@ const http_status_codes_1 = __importDefault(require("http-status-codes"));
 const config_1 = __importDefault(require("../../config"));
 const signup = (0, catchAsync_1.default)(async (req, res) => {
     const getDoc = req.body;
-    //  console.log(getDoc);
     const payload = {
         ...getDoc,
         isBlocked: false,

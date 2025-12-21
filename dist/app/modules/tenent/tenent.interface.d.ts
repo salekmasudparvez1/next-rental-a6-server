@@ -4,5 +4,9 @@ export interface ITenantApplication {
     rentalHouseId: Types.ObjectId;
     landloardId: Types.ObjectId;
     status: 'pending' | 'approve' | 'reject';
+    date: {
+        from: Date;
+        to: Date;
+    };
 }
 //# sourceMappingURL=tenent.interface.d.ts.map

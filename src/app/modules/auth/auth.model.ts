@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import mongoose, { Schema } from 'mongoose';
-import { IUserCreate, TLogin } from './auth.interface';
+import { IUserCreate, TSignupModel } from './auth.interface';
 import config from '../../config';
 
 
@@ -42,4 +42,4 @@ signUpSchema.statics.isUserExistsByCustomId = async function (email: string) {
   return await Signup.findOne({ email }).select('+password');
 };
 
-export const Signup = findBasaDB.model<IUserCreate, TLogin>('users', signUpSchema);
+export const Signup = findBasaDB.model<IUserCreate, TSignupModel>('users', signUpSchema);

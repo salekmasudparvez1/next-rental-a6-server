@@ -13,13 +13,15 @@ export interface IUserCreate extends Document {
   status: 'pending' | 'approved' | 'rejected';
   subscriptionPlan: 'free' | 'premium';
 }
-export interface TLogin extends Model<IUserCreate> {
+
+export type TSignupModel = Model<IUserCreate> & {
   isPasswordMatched(
     plainTextPassword: string,
     hashedPassword: string,
   ): Promise<boolean>;
-  isUserExistsByCustomId(email: string): Promise<IUserCreate>;
-}
+  isUserExistsByCustomId(email: string): Promise<IUserCreate | null>;
+};
+
 export type TLoginUser = {
     email: string;
     password: string;

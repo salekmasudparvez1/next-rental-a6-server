@@ -71,7 +71,7 @@ const RentalHouseSchema = new mongoose_1.Schema({
     bedroomNumber: { type: Number, required: true },
     status: { type: String, enum: ["available", "rented", "maintenance"], default: "available" },
     isPublished: { type: Boolean, default: false },
-    landloardId: { type: mongoose_1.Types.ObjectId, required: true, ref: 'users' },
+    landloardId: { type: mongoose_1.default.Schema.Types.ObjectId, required: true },
     features: { type: [FeatureSchema], required: false },
     comments: { type: [CommentSchema], required: false },
     images: { type: [String], required: false },
@@ -80,5 +80,5 @@ const RentalHouseSchema = new mongoose_1.Schema({
     versionKey: false,
     collection: 'rentalHouses',
 });
-exports.RentalHouseModel = findBasaDB.model('rentalHouses', RentalHouseSchema);
+exports.RentalHouseModel = findBasaDB.model('RentalHouses', RentalHouseSchema);
 //# sourceMappingURL=landloard.model.js.map

@@ -8,7 +8,7 @@ const findBasaDB = mongoose.connection.useDb(config.database_name as string);
 
 const TenantApplicationSchema = new Schema<ITenantApplication>({
   tenantId: { type: Schema.Types.ObjectId, required: true, ref: 'users' },
-  rentalHouseId: { type: Schema.Types.ObjectId, required: true, ref: 'rentalHouses' },
+  rentalHouseId: { type: Schema.Types.ObjectId, required: true, ref: 'RentalHouses' },
   landloardId: { type: Schema.Types.ObjectId, required: true, ref: 'users' },
   status: { type: String, enum: ['pending', 'approve', 'reject'], default: 'pending', required: true },
   date: {
@@ -21,4 +21,4 @@ const TenantApplicationSchema = new Schema<ITenantApplication>({
   collection: 'tenantRequests',
 });
 
-export const TenantApplicationModel = findBasaDB.model<ITenantApplication>('tenantRequests', TenantApplicationSchema);
+export const TenantApplicationModel = findBasaDB.model<ITenantApplication>('TenantRequests', TenantApplicationSchema);

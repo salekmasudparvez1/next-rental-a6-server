@@ -20,6 +20,9 @@ landloardRouter.get('/listings/:id', verifyLandLoard_1.default, landloard_contro
 landloardRouter.put('/listings/:id', verifyLandLoard_1.default, multer_1.uploadMultiple, (0, validateRequest_1.default)(landloard_validations_1.RentalHouseUpdateZodSchema), landloard_controller_1.landloardController.updateProperties);
 //delete properties
 landloardRouter.delete('/listings/:id', verifyLandLoard_1.default, landloard_controller_1.landloardController.deleteProperties);
+/*--------------------------------*/
+/*------this is request part-------*/
+/*--------------------------------*/
 //tenant requests part
 landloardRouter.get('/requests', verifyLandLoard_1.default, landloard_controller_1.landloardController.getAllRequests);
 //update tenant request

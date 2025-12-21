@@ -10,8 +10,8 @@ const tenent_service_1 = require("./tenent.service");
 const http_status_codes_1 = require("http-status-codes");
 const createRequest = (0, catchAsync_1.default)(async (req, res) => {
     const data = req.body?.data ? JSON.parse(req.body.data) : req.body;
-    const { rentalHouseId, status } = data;
-    const result = await tenent_service_1.tenentService.createRequestFunc(req, { rentalHouseId, status });
+    const { id, date } = data;
+    const result = await tenent_service_1.tenentService.createRequestFunc(req, { id, date });
     (0, sendResponse_1.default)(res, {
         success: true,
         message: 'Tenant application created',
@@ -28,6 +28,15 @@ const listRequests = (0, catchAsync_1.default)(async (req, res) => {
         statusCode: http_status_codes_1.StatusCodes.OK,
     });
 });
+const getSingleRequest = (0, catchAsync_1.default)(async (req, res) => {
+    const result = await tenent_service_1.tenentService.getSingleRequestFunc(req);
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        message: 'Tenant single application fetched',
+        data: result,
+        statusCode: http_status_codes_1.StatusCodes.OK,
+    });
+});
 const getAllPropertiesPublic = (0, catchAsync_1.default)(async (req, res) => {
     const result = await tenent_service_1.tenentService.getAllPropertiesPublicFunc(req);
     (0, sendResponse_1.default)(res, {
@@ -40,6 +49,7 @@ const getAllPropertiesPublic = (0, catchAsync_1.default)(async (req, res) => {
 exports.tenentController = {
     createRequest,
     listRequests,
+    getSingleRequest,
     getAllPropertiesPublic
 };
 //# sourceMappingURL=tenent.controller.js.map

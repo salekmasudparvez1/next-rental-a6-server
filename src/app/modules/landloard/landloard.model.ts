@@ -62,6 +62,6 @@ const RentalHouseSchema = new Schema<IRentalHouse>(
 
 
 
-export const RentalHouseModel = findBasaDB.model<IRentalHouse>('rentalHouses', RentalHouseSchema);
+export const RentalHouseModel = findBasaDB.model<IRentalHouse>('RentalHouses', RentalHouseSchema);
 
 
