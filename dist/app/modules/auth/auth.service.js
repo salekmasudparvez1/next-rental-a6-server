@@ -123,6 +123,9 @@ const loginFunc = async (payload) => {
         if (user?.isBlocked) {
             throw new AppError_1.default(http_status_codes_1.StatusCodes.FORBIDDEN, 'User is blocked 🤡');
         }
+        if (!user?.password) {
+            throw new AppError_1.default(http_status_codes_1.StatusCodes.FORBIDDEN, 'User is not valid 🚫');
+        }
         // Assuming Signup.isPasswordMatched(plainText, hashed) is a static helper
         if (!(await auth_model_1.Signup.isPasswordMatched(password, user?.password))) {
             throw new AppError_1.default(http_status_codes_1.StatusCodes.UNAUTHORIZED, 'Incorrect Password 😵‍💫');
@@ -209,6 +212,9 @@ const updatePasswordFunc = async (payload) => {
         const user = await auth_model_1.Signup.findOne({ email: payload?.email }).session(session);
         if (!user) {
             throw new AppError_1.default(http_status_codes_1.StatusCodes.NOT_FOUND, 'User not found');
+        }
+        if (!user?.password) {
+            throw new AppError_1.default(http_status_codes_1.StatusCodes.BAD_REQUEST, 'User has no password set');
         }
         const isMatchPassword = await bcrypt_1.default.compare(payload?.cpassword, user?.password);
         if (!isMatchPassword) {

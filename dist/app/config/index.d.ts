@@ -14,6 +14,8 @@ declare const _default: {
     cloudinary_api_key: string | undefined;
     cloudinary_api_secret: string | undefined;
     STRIPE_SECRET_KEY: string | undefined;
+    RETURN_URL: string | undefined;
+    STRIPE_WEBHOOK_SECRET: string | undefined;
 };
 export default _default;
 //# sourceMappingURL=index.d.ts.map

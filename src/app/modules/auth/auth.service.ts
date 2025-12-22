@@ -152,6 +152,9 @@ const loginFunc = async (payload: any) => {
     if (user?.isBlocked) {
       throw new AppError(StatusCodes.FORBIDDEN, 'User is blocked 🤡');
     }
+    if (!user?.password) {
+      throw new AppError(StatusCodes.FORBIDDEN, 'User is not valid 🚫');
+    }
 
     // Assuming Signup.isPasswordMatched(plainText, hashed) is a static helper
     if (!(await Signup.isPasswordMatched(password, user?.password))) {
@@ -265,6 +268,9 @@ const updatePasswordFunc = async (payload: any) => {
     const user = await Signup.findOne({ email: payload?.email }).session(session);
     if (!user) {
       throw new AppError(StatusCodes.NOT_FOUND, 'User not found');
+    }
+    if (!user?.password) {
+      throw new AppError(StatusCodes.BAD_REQUEST, 'User has no password set');
     }
 
     const isMatchPassword = await bcrypt.compare(payload?.cpassword, user?.password);

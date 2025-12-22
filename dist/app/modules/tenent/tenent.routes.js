@@ -15,7 +15,7 @@ tenentRouter.post('/requests', verifyTenant_copy_1.default, (0, validateRequest_
 // List applications
 tenentRouter.get('/requests', verifyTenant_copy_1.default, tenent_controller_1.tenentController.listRequests);
 tenentRouter.get('/request/:id', verifyTenant_copy_1.default, tenent_controller_1.tenentController.getSingleRequest);
-/*==get all properrty for public query==*/
+/*== get all properrty for public query ==*/
 tenentRouter.get('/get-all', verifyLogin_1.default, tenent_controller_1.tenentController.getAllPropertiesPublic);
 tenentRouter.get('/get-all/:id', tenent_controller_1.tenentController.getAllPropertiesPublic);
 // // Update status

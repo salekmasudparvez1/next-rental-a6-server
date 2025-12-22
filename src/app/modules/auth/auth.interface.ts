@@ -5,7 +5,7 @@ export interface IUserCreate extends Document {
   username: string;
   email: string;
   phoneNumber: string;
-  password: string;
+  password?: string ;
   role: 'admin' | 'landlord' | 'tenant';
   isBlocked: boolean;
   isActive: boolean;

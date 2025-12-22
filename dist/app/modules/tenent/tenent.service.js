@@ -73,7 +73,12 @@ const listRequestsFunc = async (req) => {
     // Extra visibility while debugging
     const all = await tenent_model_1.TenantApplicationModel.find().lean();
     const requests = await tenent_model_1.TenantApplicationModel.find({ tenantId: userId }).populate({
-        path: "rentalHouseId"
+        path: "rentalHouseId",
+        model: landloard_model_1.RentalHouseModel
+    }).populate({
+        path: "landloardId",
+        select: "-password",
+        model: auth_model_1.Signup
     }).lean();
     return requests;
 };
@@ -82,7 +87,14 @@ const getSingleRequestFunc = async (req) => {
     const userId = typeof rawUserId === 'string' ? new mongoose_1.Types.ObjectId(rawUserId) : rawUserId;
     const requestRentalHouseId = req.params.id;
     const rentalHouseId = typeof requestRentalHouseId === 'string' ? new mongoose_1.Types.ObjectId(requestRentalHouseId) : requestRentalHouseId;
-    const request = await tenent_model_1.TenantApplicationModel.findOne({ rentalHouseId: new mongoose_1.default.Types.ObjectId(rentalHouseId), tenantId: new mongoose_1.default.Types.ObjectId(userId) }).lean();
+    const request = await tenent_model_1.TenantApplicationModel.findOne({ rentalHouseId: new mongoose_1.default.Types.ObjectId(rentalHouseId), tenantId: new mongoose_1.default.Types.ObjectId(userId) }).populate({
+        path: "rentalHouseId",
+        model: landloard_model_1.RentalHouseModel
+    }).populate({
+        path: "landloardId",
+        select: "-password",
+        model: auth_model_1.Signup
+    }).lean();
     return request;
 };
 const getAllPropertiesPublicFunc = async (req) => {

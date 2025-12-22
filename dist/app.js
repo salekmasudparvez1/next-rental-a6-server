@@ -12,17 +12,23 @@ const auth_routes_1 = __importDefault(require("./app/modules/auth/auth.routes"))
 const admin_routes_1 = __importDefault(require("./app/modules/admin/admin.routes"));
 const landloard_routes_1 = __importDefault(require("./app/modules/landloard/landloard.routes"));
 const tenent_routes_1 = __importDefault(require("./app/modules/tenent/tenent.routes"));
+const pay_routes_1 = __importDefault(require("./app/modules/pay/pay.routes"));
 const app = (0, express_1.default)();
 //parsers
-app.use(express_1.default.json());
+app.use(express_1.default.json({
+    verify: (req, _res, buf) => {
+        req.rawBody = buf;
+    },
+}));
 app.use((0, cookie_parser_1.default)());
-app.use(express_1.default.urlencoded({ extended: true }));
+app.use(express_1.default.urlencoded({ extended: true, verify: (req, _res, buf) => { req.rawBody = buf; } }));
 app.use((0, cors_1.default)({ origin: ['http://localhost:3000', 'http://localhost:5000', 'https://findbasa.vercel.app', 'https://findbasa.netlify.app'], credentials: true }));
 // application routes
 app.use('/api/auth', auth_routes_1.default);
 app.use('/api/admin', admin_routes_1.default);
 app.use('/api/landlords', landloard_routes_1.default);
 app.use('/api/tenants', tenent_routes_1.default);
+app.use('/api/pay', pay_routes_1.default);
 app.get('/', (req, res) => {
     res.send('Server is running !');
 });
