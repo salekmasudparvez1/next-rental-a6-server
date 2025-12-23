@@ -23,6 +23,7 @@ const handleWebhook = catchAsync(async (req: Request, res: Response) => {
   // raw body should be available either via express.raw middleware or via req.rawBody set in app.json verify
   const rawBody = (req as any).rawBody as Buffer ?? req.body;
   const sig = req.headers['stripe-signature'] as string | undefined;
+  console.log(sig,rawBody);
 
   const result = await payService.handleWebhookFunc(rawBody, sig);
 

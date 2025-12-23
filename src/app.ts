@@ -23,14 +23,14 @@ app.use(express.json({
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true, verify: (req: any, _res, buf) => { req.rawBody = buf; } }));
 
-app.use(cors({ origin: ['http://localhost:3000','http://localhost:5000','https://findbasa.vercel.app','https://findbasa.netlify.app'], credentials: true }));
+app.use(cors({ origin: ['http://localhost:3000', 'http://localhost:5000', 'https://findbasa.vercel.app', 'https://findbasa.netlify.app'], credentials: true }));
 
 // application routes
-app.use('/api/auth',authRouter);
-app.use('/api/admin',adminRouter);
-app.use('/api/landlords',landloardRouter);
-app.use('/api/tenants',tenentRouter);
-app.use('/api/pay',payRouter);
+app.use('/api/auth', authRouter);
+app.use('/api/admin', adminRouter);
+app.use('/api/landlords', landloardRouter);
+app.use('/api/tenants', tenentRouter);
+app.use('/api/pay', express.raw({ type: "application/json" }), payRouter);
 
 
 

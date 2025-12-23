@@ -4,9 +4,20 @@ import config from "../../config";
 import AppError from "../../errors/AppError";
 import { StatusCodes } from "http-status-codes";
 
-const stripe = new Stripe(config.STRIPE_SECRET_KEY as string);
+
+const getStripe = () => {
+  let stripeInstance: Stripe | null = null;
+  if (!stripeInstance) {
+    if (!config.STRIPE_SECRET_KEY) {
+      throw new AppError(StatusCodes.INTERNAL_SERVER_ERROR, 'Stripe secret key is not configured');
+    }
+    stripeInstance = new Stripe(config.STRIPE_SECRET_KEY as string);
+  }
+  return stripeInstance;
+};
 
 const createPaymentIntentFunc = async (req :Request)=>{
+   const stripe = getStripe();
    const session = await stripe.paymentIntents.create({
     amount: 5000,
     currency: 'usd',
@@ -25,6 +36,7 @@ const handleWebhookFunc = async (rawBody: Buffer | string, sigHeader?: string) =
 
   let event: Stripe.Event;
   try {
+    const stripe = getStripe();
     const payload = rawBody instanceof Buffer ? rawBody : Buffer.from(rawBody);
     event = stripe.webhooks.constructEvent(payload, sigHeader || '', endpointSecret);
   } catch (err) {

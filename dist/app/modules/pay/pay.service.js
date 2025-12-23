@@ -8,8 +8,18 @@ const stripe_1 = __importDefault(require("stripe"));
 const config_1 = __importDefault(require("../../config"));
 const AppError_1 = __importDefault(require("../../errors/AppError"));
 const http_status_codes_1 = require("http-status-codes");
-const stripe = new stripe_1.default(config_1.default.STRIPE_SECRET_KEY);
+let stripeInstance = null;
+const getStripe = () => {
+    if (!stripeInstance) {
+        if (!config_1.default.STRIPE_SECRET_KEY) {
+            throw new AppError_1.default(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR, 'Stripe secret key is not configured');
+        }
+        stripeInstance = new stripe_1.default(config_1.default.STRIPE_SECRET_KEY);
+    }
+    return stripeInstance;
+};
 const createPaymentIntentFunc = async (req) => {
+    const stripe = getStripe();
     const session = await stripe.paymentIntents.create({
         amount: 5000,
         currency: 'usd',
@@ -24,6 +34,7 @@ const handleWebhookFunc = async (rawBody, sigHeader) => {
     }
     let event;
     try {
+        const stripe = getStripe();
         const payload = rawBody instanceof Buffer ? rawBody : Buffer.from(rawBody);
         event = stripe.webhooks.constructEvent(payload, sigHeader || '', endpointSecret);
     }
