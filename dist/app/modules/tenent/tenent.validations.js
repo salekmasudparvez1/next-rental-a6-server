@@ -12,6 +12,7 @@ exports.TenantCreateZodSchema = zod_1.z.object({
             to: zod_1.z.coerce.date(),
         }),
         status: zod_1.z.enum(["pending", "approve", "reject"]).default("pending").optional(),
+        paymentStatus: zod_1.z.enum(["paid", "unpaid"]).default("unpaid").optional(),
     }),
 });
 exports.TenantUpdateZodSchema = exports.TenantCreateZodSchema.partial();

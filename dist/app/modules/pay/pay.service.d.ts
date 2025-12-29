@@ -1,10 +1,28 @@
 import { Request } from "express";
+import { Types } from "mongoose";
 export declare const payService: {
     createPaymentIntentFunc: (req: Request) => Promise<{
         clientSecret: string | null;
     }>;
-    handleWebhookFunc: (rawBody: Buffer | string, sigHeader?: string) => Promise<{
+    WebhookFunc: (rawBody: Buffer | string, signatureHeader?: string) => Promise<{
         received: boolean;
     }>;
+    getAllTransactionsFunc: (req: Request) => Promise<{
+        data: (import("mongoose").Document<unknown, {}, import("./pay.interface").IpayProduct, {}, import("mongoose").DefaultSchemaOptions> & import("./pay.interface").IpayProduct & {
+            _id: Types.ObjectId;
+        } & {
+            __v: number;
+        })[];
+        meta: {
+            page: number;
+            limit: number;
+            total: number;
+        };
+    } | undefined>;
+    getSingleTenantTransactionsFunc: (req: Request) => Promise<(import("mongoose").Document<unknown, {}, import("./pay.interface").IpayProduct, {}, import("mongoose").DefaultSchemaOptions> & import("./pay.interface").IpayProduct & {
+        _id: Types.ObjectId;
+    } & {
+        __v: number;
+    }) | null>;
 };
 //# sourceMappingURL=pay.service.d.ts.map

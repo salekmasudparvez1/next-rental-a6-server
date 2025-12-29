@@ -39,9 +39,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AdminModel = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
 const config_1 = __importDefault(require("../../config"));
+const auth_model_1 = require("../auth/auth.model");
 const db = mongoose_1.default.connection.useDb(config_1.default.database_name);
 const AdminSchema = new mongoose_1.Schema({
-    userId: { type: mongoose_1.Types.ObjectId, required: true, unique: true, ref: 'users' },
+    userId: { type: mongoose_1.Types.ObjectId, required: true, unique: true, ref: auth_model_1.Signup },
     permissions: { type: [String], default: [] },
     isSuper: { type: Boolean, default: false },
 }, {

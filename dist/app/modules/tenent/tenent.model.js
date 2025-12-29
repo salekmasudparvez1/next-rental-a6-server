@@ -39,16 +39,20 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.TenantApplicationModel = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
 const config_1 = __importDefault(require("../../config"));
+const auth_model_1 = require("../auth/auth.model");
+const landloard_model_1 = require("../landloard/landloard.model");
 const findBasaDB = mongoose_1.default.connection.useDb(config_1.default.database_name);
 const TenantApplicationSchema = new mongoose_1.Schema({
-    tenantId: { type: mongoose_1.Schema.Types.ObjectId, required: true, ref: 'users' },
-    rentalHouseId: { type: mongoose_1.Schema.Types.ObjectId, required: true, ref: 'RentalHouses' },
+    tenantId: { type: mongoose_1.Schema.Types.ObjectId, required: true, ref: auth_model_1.Signup.modelName },
+    rentalHouseId: { type: mongoose_1.Schema.Types.ObjectId, required: true, ref: landloard_model_1.RentalHouseModel.modelName },
     landloardId: { type: mongoose_1.Schema.Types.ObjectId, required: true, ref: 'users' },
     status: { type: String, enum: ['pending', 'approve', 'reject'], default: 'pending', required: true },
     date: {
         from: { type: Date, required: true },
         to: { type: Date, required: true }
-    }
+    },
+    paymentStatus: { type: String, enum: ["PENDING", "PAID", "FAILED", "CANCELED"], default: 'PENDING', required: true },
+    paymentIntentId: { type: String, default: null },
 }, {
     timestamps: true,
     versionKey: false,

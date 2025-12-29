@@ -12,7 +12,10 @@ tenentRouter.post('/requests',verifyTenant, validateRequest(TenantCreateZodSchem
 
 // List applications
 tenentRouter.get('/requests',verifyTenant, tenentController.listRequests);
-tenentRouter.get('/request/:id',verifyTenant, tenentController.getSingleRequest);
+// Get single application by id
+tenentRouter.get('/request/:id',verifyTenant, tenentController.getSingleRequestById);
+// Get single application by tenantId and rentalHouseId
+tenentRouter.get('/request/post/:id',verifyTenant, tenentController.getSingleRequestByUserInfo);
 
 /*== get all properrty for public query ==*/
 tenentRouter.get('/get-all',verifyLogin,tenentController.getAllPropertiesPublic)

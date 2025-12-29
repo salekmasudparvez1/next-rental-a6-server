@@ -13,6 +13,10 @@ export declare const TenantCreateZodSchema: z.ZodObject<{
             approve: "approve";
             reject: "reject";
         }>>>;
+        paymentStatus: z.ZodOptional<z.ZodDefault<z.ZodEnum<{
+            paid: "paid";
+            unpaid: "unpaid";
+        }>>>;
     }, z.core.$strip>;
 }, z.core.$strip>;
 export declare const TenantUpdateZodSchema: z.ZodObject<{
@@ -28,6 +32,10 @@ export declare const TenantUpdateZodSchema: z.ZodObject<{
             pending: "pending";
             approve: "approve";
             reject: "reject";
+        }>>>;
+        paymentStatus: z.ZodOptional<z.ZodDefault<z.ZodEnum<{
+            paid: "paid";
+            unpaid: "unpaid";
         }>>>;
     }, z.core.$strip>>;
 }, z.core.$strip>;

@@ -63,7 +63,12 @@ export declare const tenentService: {
     } & {
         __v: number;
     })[]>;
-    getSingleRequestFunc: (req: Request) => Promise<(import("./tenent.interface").ITenantApplication & {
+    getSingleRequestByIdFunc: (req: Request) => Promise<(import("./tenent.interface").ITenantApplication & {
+        _id: Types.ObjectId;
+    } & {
+        __v: number;
+    }) | null>;
+    getSingleRequestByUserInfoFunc: (req: Request) => Promise<(import("./tenent.interface").ITenantApplication & {
         _id: Types.ObjectId;
     } & {
         __v: number;

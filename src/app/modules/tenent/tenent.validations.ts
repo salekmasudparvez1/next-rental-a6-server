@@ -11,6 +11,7 @@ export const TenantCreateZodSchema = z.object({
             }),
 
         status: z.enum(["pending", "approve", "reject"]).default("pending").optional(),
+        paymentStatus: z.enum(["paid", "unpaid"]).default("unpaid").optional(),
     }),
 })
 

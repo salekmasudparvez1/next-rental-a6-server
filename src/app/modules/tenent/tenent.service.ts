@@ -34,6 +34,8 @@ const createRequestFunc = async (req: Request, payload: {
     landloardId: getLandloardId?.landloardId,
     status: 'pending',
     date: payload?.date,
+    paymentStatus: 'PENDING',
+
   }
 
   const doc = await TenantApplicationModel.create(createDoc);
@@ -57,14 +59,36 @@ const listRequestsFunc = async (req: Request) => {
 
   return requests;
 };
-const getSingleRequestFunc = async (req: Request) => {
-  const rawUserId = (req as any).userId;
-  const userId = typeof rawUserId === 'string' ? new Types.ObjectId(rawUserId) : rawUserId;
+const getSingleRequestByIdFunc = async (req: Request) => {
+  
   const requestRentalHouseId = req.params.id;
   const rentalHouseId = typeof requestRentalHouseId === 'string' ? new Types.ObjectId(requestRentalHouseId) : requestRentalHouseId;
 
 
-  const request = await TenantApplicationModel.findOne({ rentalHouseId: new mongoose.Types.ObjectId(rentalHouseId), tenantId: new mongoose.Types.ObjectId(userId) }).populate({
+  const request = await TenantApplicationModel.findById(rentalHouseId).populate({
+    path: "rentalHouseId",
+    model: RentalHouseModel
+  }).populate({
+    path: "landloardId",
+    select: "-password",
+    model: Signup
+  }).lean();
+
+  return request;
+}
+const getSingleRequestByUserInfoFunc = async (req: Request) => {
+  
+  const requestRentalHouseId = req.params.id;
+  const rawUserId = (req as any).userId;
+  const rentalHouseId = typeof requestRentalHouseId === 'string' ? new Types.ObjectId(requestRentalHouseId) : requestRentalHouseId;
+  const userId = typeof rawUserId === 'string' ? new Types.ObjectId(rawUserId) : rawUserId;
+  if (!rentalHouseId || !userId) {
+    throw new AppError(StatusCodes.BAD_REQUEST, 'Both rentalHouseId and userId are required');
+  }
+  const request = await TenantApplicationModel.findOne({
+    tenantId: userId,
+    rentalHouseId: rentalHouseId
+  }).populate({
     path: "rentalHouseId",
     model: RentalHouseModel
   }).populate({
@@ -147,7 +171,8 @@ export const getAllPropertiesPublicFunc = async (req: RequestWithUser) => {
 export const tenentService = {
   createRequestFunc,
   listRequestsFunc,
-  getSingleRequestFunc,
+  getSingleRequestByIdFunc,
+  getSingleRequestByUserInfoFunc,
   getAllPropertiesPublicFunc
 };
 

@@ -30,7 +30,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/landlords', landloardRouter);
 app.use('/api/tenants', tenentRouter);
-app.use('/api/pay', express.raw({ type: "application/json" }), payRouter);
+app.use('/api/pay', payRouter);
 
 
 

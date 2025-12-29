@@ -18,11 +18,21 @@ const createPaymentIntent = (0, catchAsync_1.default)(async (req, res) => {
     });
 });
 // Stripe webhook handler
-const handleWebhook = (0, catchAsync_1.default)(async (req, res) => {
-    // raw body should be available either via express.raw middleware or via req.rawBody set in app.json verify
-    const rawBody = req.rawBody ?? req.body;
-    const sig = req.headers['stripe-signature'];
-    const result = await pay_service_1.payService.handleWebhookFunc(rawBody, sig);
+const Webhook = (0, catchAsync_1.default)(async (req, res) => {
+    /*--------------------------notes for me----------------------------------- */
+    /* safe way to get rawBody if it exists, otherwise use the normal parsed body
+    Some middlewares (like express.json()) parse req.body into an object, destroying the raw bytes.for this reason taking req.rowBody if it null or undefined takeing req.body.
+  
+    now question is what is destroying bites :❌ Problem: Stripe’s webhook signature verification requires the exact original bytes. If you use req.body after parsing, it may fail verification because some characters, whitespace, or encoding may have changed.
+  
+    and there is a "signature" in header from stripe webhook calls :https://docs.stripe.com/webhooks/signature
+  
+    */
+    /*--------------------------happy codding with Parvez---------------------------------- */
+    const rawBodyBuffer = req.rawBody;
+    const payloadBody = rawBodyBuffer ?? (req.body instanceof Buffer ? req.body : Buffer.from(JSON.stringify(req.body)));
+    const signature = req.headers['stripe-signature'];
+    const result = await pay_service_1.payService.WebhookFunc(payloadBody, signature);
     (0, sendResponse_1.default)(res, {
         success: true,
         message: 'Your payment has been success',
@@ -30,8 +40,30 @@ const handleWebhook = (0, catchAsync_1.default)(async (req, res) => {
         statusCode: http_status_codes_1.StatusCodes.OK,
     });
 });
+// Get all transactions
+const getAllTransactions = (0, catchAsync_1.default)(async (req, res) => {
+    const result = await pay_service_1.payService.getAllTransactionsFunc(req);
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        message: 'All transactions fetched successfully',
+        data: result,
+        statusCode: http_status_codes_1.StatusCodes.OK,
+    });
+});
+// get single tanent id
+const getSingleTenantTransactions = (0, catchAsync_1.default)(async (req, res) => {
+    const result = await pay_service_1.payService.getSingleTenantTransactionsFunc(req);
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        message: 'Single tenant transactions fetched successfully',
+        data: result,
+        statusCode: http_status_codes_1.StatusCodes.OK,
+    });
+});
 exports.paymentControler = {
     createPaymentIntent,
-    handleWebhook
+    Webhook,
+    getAllTransactions,
+    getSingleTenantTransactions
 };
 //# sourceMappingURL=pay.controller.js.map

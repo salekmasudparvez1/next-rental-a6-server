@@ -39,18 +39,19 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PayModel = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
 const config_1 = __importDefault(require("../../config"));
-const auth_model_1 = require("../auth/auth.model");
-const landloard_model_1 = require("../landloard/landloard.model");
+const tenent_model_1 = require("../tenent/tenent.model");
 const findBasaDB = mongoose_1.default.connection.useDb(config_1.default.database_name);
 const paySchema = new mongoose_1.Schema({
-    houseName: { type: String, requird: true },
-    rentalAmout: { type: String, requird: true },
-    countDay: { type: Number, requird: true },
-    tenandId: { type: mongoose_1.Schema.Types.ObjectId, requird: true, ref: auth_model_1.Signup },
-    landloardid: { type: mongoose_1.Schema.Types.ObjectId, requird: true, ref: auth_model_1.Signup },
-    rentalHouseId: { type: mongoose_1.Schema.Types.ObjectId, requird: true, ref: landloard_model_1.RentalHouseModel },
-    currency: { type: String, requird: true },
-    paymentStatus: { type: String, enum: ["pending", "failed", "success"], default: "pending", requird: true, }
-}, {});
-exports.PayModel = findBasaDB.model('payment', paySchema);
+    transactionId: { type: String },
+    amount: { type: Number },
+    amountCents: { type: Number },
+    paymentMethod: { type: String },
+    requestId: { type: mongoose_1.Schema.Types.ObjectId, ref: tenent_model_1.TenantApplicationModel },
+    currency: { type: String, required: true },
+    paymentStatus: {
+        status: { type: String, enum: ['failed', 'success'], required: true },
+        message: { type: String }
+    }
+}, { timestamps: true, versionKey: false, collection: 'transaction' });
+exports.PayModel = findBasaDB.model('transaction', paySchema);
 //# sourceMappingURL=pay.model.js.map

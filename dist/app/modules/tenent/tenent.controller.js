@@ -28,8 +28,17 @@ const listRequests = (0, catchAsync_1.default)(async (req, res) => {
         statusCode: http_status_codes_1.StatusCodes.OK,
     });
 });
-const getSingleRequest = (0, catchAsync_1.default)(async (req, res) => {
-    const result = await tenent_service_1.tenentService.getSingleRequestFunc(req);
+const getSingleRequestById = (0, catchAsync_1.default)(async (req, res) => {
+    const result = await tenent_service_1.tenentService.getSingleRequestByIdFunc(req);
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        message: 'Tenant single application fetched',
+        data: result,
+        statusCode: http_status_codes_1.StatusCodes.OK,
+    });
+});
+const getSingleRequestByUserInfo = (0, catchAsync_1.default)(async (req, res) => {
+    const result = await tenent_service_1.tenentService.getSingleRequestByUserInfoFunc(req);
     (0, sendResponse_1.default)(res, {
         success: true,
         message: 'Tenant single application fetched',
@@ -49,7 +58,8 @@ const getAllPropertiesPublic = (0, catchAsync_1.default)(async (req, res) => {
 exports.tenentController = {
     createRequest,
     listRequests,
-    getSingleRequest,
+    getSingleRequestById,
+    getSingleRequestByUserInfo,
     getAllPropertiesPublic
 };
 //# sourceMappingURL=tenent.controller.js.map

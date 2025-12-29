@@ -14,7 +14,10 @@ const tenentRouter = (0, express_1.Router)();
 tenentRouter.post('/requests', verifyTenant_copy_1.default, (0, validateRequest_1.default)(tenent_validations_1.TenantCreateZodSchema), tenent_controller_1.tenentController.createRequest);
 // List applications
 tenentRouter.get('/requests', verifyTenant_copy_1.default, tenent_controller_1.tenentController.listRequests);
-tenentRouter.get('/request/:id', verifyTenant_copy_1.default, tenent_controller_1.tenentController.getSingleRequest);
+// Get single application by id
+tenentRouter.get('/request/:id', verifyTenant_copy_1.default, tenent_controller_1.tenentController.getSingleRequestById);
+// Get single application by tenantId and rentalHouseId
+tenentRouter.get('/request/post/:id', verifyTenant_copy_1.default, tenent_controller_1.tenentController.getSingleRequestByUserInfo);
 /*== get all properrty for public query ==*/
 tenentRouter.get('/get-all', verifyLogin_1.default, tenent_controller_1.tenentController.getAllPropertiesPublic);
 tenentRouter.get('/get-all/:id', tenent_controller_1.tenentController.getAllPropertiesPublic);

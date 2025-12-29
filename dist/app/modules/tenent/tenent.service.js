@@ -63,6 +63,7 @@ const createRequestFunc = async (req, payload) => {
         landloardId: getLandloardId?.landloardId,
         status: 'pending',
         date: payload?.date,
+        paymentStatus: 'PENDING',
     };
     const doc = await tenent_model_1.TenantApplicationModel.create(createDoc);
     return doc;
@@ -82,12 +83,31 @@ const listRequestsFunc = async (req) => {
     }).lean();
     return requests;
 };
-const getSingleRequestFunc = async (req) => {
-    const rawUserId = req.userId;
-    const userId = typeof rawUserId === 'string' ? new mongoose_1.Types.ObjectId(rawUserId) : rawUserId;
+const getSingleRequestByIdFunc = async (req) => {
     const requestRentalHouseId = req.params.id;
     const rentalHouseId = typeof requestRentalHouseId === 'string' ? new mongoose_1.Types.ObjectId(requestRentalHouseId) : requestRentalHouseId;
-    const request = await tenent_model_1.TenantApplicationModel.findOne({ rentalHouseId: new mongoose_1.default.Types.ObjectId(rentalHouseId), tenantId: new mongoose_1.default.Types.ObjectId(userId) }).populate({
+    const request = await tenent_model_1.TenantApplicationModel.findById(rentalHouseId).populate({
+        path: "rentalHouseId",
+        model: landloard_model_1.RentalHouseModel
+    }).populate({
+        path: "landloardId",
+        select: "-password",
+        model: auth_model_1.Signup
+    }).lean();
+    return request;
+};
+const getSingleRequestByUserInfoFunc = async (req) => {
+    const requestRentalHouseId = req.params.id;
+    const rawUserId = req.userId;
+    const rentalHouseId = typeof requestRentalHouseId === 'string' ? new mongoose_1.Types.ObjectId(requestRentalHouseId) : requestRentalHouseId;
+    const userId = typeof rawUserId === 'string' ? new mongoose_1.Types.ObjectId(rawUserId) : rawUserId;
+    if (!rentalHouseId || !userId) {
+        throw new AppError_1.default(http_status_codes_1.StatusCodes.BAD_REQUEST, 'Both rentalHouseId and userId are required');
+    }
+    const request = await tenent_model_1.TenantApplicationModel.findOne({
+        tenantId: userId,
+        rentalHouseId: rentalHouseId
+    }).populate({
         path: "rentalHouseId",
         model: landloard_model_1.RentalHouseModel
     }).populate({
@@ -149,7 +169,8 @@ exports.getAllPropertiesPublicFunc = getAllPropertiesPublicFunc;
 exports.tenentService = {
     createRequestFunc,
     listRequestsFunc,
-    getSingleRequestFunc,
+    getSingleRequestByIdFunc,
+    getSingleRequestByUserInfoFunc,
     getAllPropertiesPublicFunc: exports.getAllPropertiesPublicFunc
 };
 //# sourceMappingURL=tenent.service.js.map

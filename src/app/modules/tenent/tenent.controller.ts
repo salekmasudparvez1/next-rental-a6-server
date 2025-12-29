@@ -5,7 +5,7 @@ import { tenentService } from './tenent.service';
 import { StatusCodes } from 'http-status-codes';
 
 const createRequest = catchAsync(async (req: Request, res: Response) => {
-   
+
     const data = req.body?.data ? JSON.parse(req.body.data) : req.body;
     const { id, date } = data;
     const result = await tenentService.createRequestFunc(req, { id, date });
@@ -18,7 +18,7 @@ const createRequest = catchAsync(async (req: Request, res: Response) => {
 });
 
 const listRequests = catchAsync(async (req: Request, res: Response) => {
-    
+
     const result = await tenentService.listRequestsFunc(req as any);
     sendResponse(res, {
         success: true,
@@ -26,12 +26,23 @@ const listRequests = catchAsync(async (req: Request, res: Response) => {
         data: result,
         statusCode: StatusCodes.OK,
     });
-}); 
+});
 
-const getSingleRequest = catchAsync(async (req: Request, res: Response) => {
-    
-    const result = await tenentService.getSingleRequestFunc(req as any);
-  
+const getSingleRequestById = catchAsync(async (req: Request, res: Response) => {
+
+    const result = await tenentService.getSingleRequestByIdFunc(req as any);
+
+    sendResponse(res, {
+        success: true,
+        message: 'Tenant single application fetched',
+        data: result,
+        statusCode: StatusCodes.OK,
+    });
+});
+const getSingleRequestByUserInfo = catchAsync(async (req: Request, res: Response) => {
+
+    const result = await tenentService.getSingleRequestByUserInfoFunc(req as any);
+
     sendResponse(res, {
         success: true,
         message: 'Tenant single application fetched',
@@ -41,23 +52,24 @@ const getSingleRequest = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getAllPropertiesPublic = catchAsync(async (req: Request, res: Response) => {
-    
+
     const result = await tenentService.getAllPropertiesPublicFunc(req as any);
-  
+
     sendResponse(res, {
         success: true,
         message: 'Landloard all post fetched successfully',
         data: result,
         statusCode: StatusCodes.OK,
     });
-}); 
+});
 
 
 
 export const tenentController = {
     createRequest,
     listRequests,
-    getSingleRequest,
-   getAllPropertiesPublic
-   
+    getSingleRequestById,
+    getSingleRequestByUserInfo,
+    getAllPropertiesPublic
+
 };
