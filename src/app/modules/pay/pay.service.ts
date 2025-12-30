@@ -125,15 +125,6 @@ const WebhookFunc = async (rawBody: Buffer | string, signatureHeader?: string) =
         const requestId = paymentIntent.metadata?.requestId;
         if (!requestId) {
           throw new AppError(StatusCodes.BAD_REQUEST, "Missing requestId in paymentIntent requestId metadata");
-
-        }
-
-        // Check if transaction already exists
-        const alreadyExists = await PayModel.findOne({ transactionId: paymentIntent.id });
-        console.log("🔍 Transaction exists check:", alreadyExists);
-        if (alreadyExists) {
-          throw new AppError(StatusCodes.BAD_REQUEST, "Transaction already recorded");
-
         }
 
         // Determine payment method
@@ -145,23 +136,44 @@ const WebhookFunc = async (rawBody: Buffer | string, signatureHeader?: string) =
           try {
             charge = await stripe.charges.retrieve(paymentIntent.latest_charge);
           } catch (err) {
-            console.error("❌ Failed to retrieve charge:", err);
+            throw new AppError(StatusCodes.INTERNAL_SERVER_ERROR, "Failed to retrieve charge information");  
           }
         }
         paymentMethod = charge?.payment_method_details?.type || "unknown";
 
+        // Check if transaction already exists
+        const existing = await PayModel.findOne({ transactionId: paymentIntent.id });
 
-        await PayModel.create({
-          transactionId: paymentIntent.id,
-          amountCents: Number(paymentIntent.amount),
-          amount: Number(paymentIntent.amount_received) / 100,
-          currency: paymentIntent.currency,
-          paymentMethod,
-          paymentStatus: { status: "success", message: "Payment succeeded" },
-          requestId: new Types.ObjectId(requestId),
-        });
+        if (!existing) {
+          // Insert new record
+          await PayModel.create({
+            transactionId: paymentIntent.id,
+            amountCents: Number(paymentIntent.amount),
+            amount: Number(paymentIntent.amount_received) / 100,
+            currency: paymentIntent.currency,
+            paymentMethod,
+            paymentStatus: { status: "success", message: "Payment succeeded" },
+            requestId: new Types.ObjectId(requestId),
+          });
 
-        await TenantApplicationModel.findByIdAndUpdate(requestId, { paymentStatus: "PAID" });
+          // Update related records
+          await TenantApplicationModel.findByIdAndUpdate(requestId, { paymentStatus: "PAID" });
+          const res = await TenantApplicationModel.findById(requestId);
+          await RentalHouseModel.findByIdAndUpdate(res?.rentalHouseId, { status: "rented" });
+        } else if (existing.paymentStatus.status !== "success") {
+          // Update existing failed record to success
+          existing.paymentStatus = { status: "success", message: "Payment succeeded" };
+          existing.amount = Number(paymentIntent.amount_received) / 100;
+          existing.paymentMethod = paymentMethod;
+          await existing.save();
+
+          // Update related records if needed
+          await TenantApplicationModel.findByIdAndUpdate(requestId, { paymentStatus: "PAID" });
+          const res = await TenantApplicationModel.findById(requestId);
+          await RentalHouseModel.findByIdAndUpdate(res?.rentalHouseId, { status: "rented" });
+        } else {
+          console.log("ℹ️ Duplicate success webhook ignored");
+        }
 
         break;
       }
@@ -172,31 +184,28 @@ const WebhookFunc = async (rawBody: Buffer | string, signatureHeader?: string) =
 
         if (!requestId) {
           throw new AppError(StatusCodes.BAD_REQUEST, "Missing requestId in paymentIntent metadata");
-
-        }
-
-        const exists = await PayModel.findOne({ transactionId: paymentIntent.id });
-        console.log("🔍 Transaction exists check (failed):", exists);
-        if (exists) {
-          throw new AppError(StatusCodes.BAD_REQUEST, "Transaction already recorded");
         }
 
         const errorMsg = paymentIntent.last_payment_error?.message || "Payment failed";
 
-        await PayModel.create({
-          transactionId: paymentIntent.id,
-          amountCents: Number(paymentIntent.amount),
-          amount: 0,
-          currency: paymentIntent.currency,
-          paymentMethod: "unknown",
-          paymentStatus: { status: "failed", message: errorMsg },
-          requestId: new Types.ObjectId(requestId),
-        });
+        // Check if transaction already exists
+        const existingFail = await PayModel.findOne({ transactionId: paymentIntent.id });
+        if (!existingFail) {
+          await PayModel.create({
+            transactionId: paymentIntent.id,
+            amountCents: Number(paymentIntent.amount),
+            amount: 0,
+            currency: paymentIntent.currency,
+            paymentMethod: "unknown",
+            paymentStatus: { status: "failed", message: errorMsg },
+            requestId: new Types.ObjectId(requestId),
+          });
 
-
-
-        await TenantApplicationModel.findByIdAndUpdate(requestId, { paymentStatus: "FAILED" });
-        console.log("✅ TenantApplicationModel updated to FAILED");
+          await TenantApplicationModel.findByIdAndUpdate(requestId, { paymentStatus: "FAILED" });
+          console.log("✅ TenantApplicationModel updated to FAILED");
+        } else {
+          console.log("ℹ️ Duplicate failed webhook ignored for transaction:", paymentIntent.id);
+        }
 
         break;
       }
@@ -210,6 +219,7 @@ const WebhookFunc = async (rawBody: Buffer | string, signatureHeader?: string) =
 
   return { received: true };
 };
+
 
 const getAllTransactionsFunc = async (req: Request) => {
   const rawUser = (req as any).user;
@@ -382,8 +392,7 @@ const getSingleTenantTransactionsFunc = async (req: Request) => {
   return transactions;
 }
 
-
-export const getSingleTransactionsByStatusFunc = async (req: Request) => {
+const getSingleTransactionsByStatusFunc = async (req: Request) => {
   const rawUser = (req as any).user;
 
   // Check if rawUser.id is a valid ObjectId
@@ -391,60 +400,94 @@ export const getSingleTransactionsByStatusFunc = async (req: Request) => {
   if (!rawUser) {
     throw new AppError(StatusCodes.UNAUTHORIZED, 'User not found');
   }
- const transactions = await PayModel.aggregate([
-  // 1️⃣ Only successful payments
-  {
-    $match: {
-      "paymentStatus.status": "success"
-    }
-  },
+  const transactions = await PayModel.aggregate([
+    // 1. Only successful payments
+    { $match: { "paymentStatus.status": "success" } },
 
-  // 2️⃣ Join tenantRequests collection
-  {
-    $lookup: {
-      from: "tenantRequests",
-      let: { reqId: { $toObjectId: "$requestId" } },
-      pipeline: [
-        {
-          $match: {
-            $expr: { $eq: ["$_id", "$$reqId"] }
-          }
-        }
-      ],
-      as: "request"
-    }
-  },
+    // 2. Join tenantRequests
+    {
+      $lookup: {
+        from: "tenantRequests",
+        let: { reqId: { $toObjectId: "$requestId" } }, // remove $toObjectId if already ObjectId
+        pipeline: [
+          { $match: { $expr: { $eq: ["$_id", "$$reqId"] } } }
+        ],
+        as: "request"
+      }
+    },
+    { $unwind: { path: "$request", preserveNullAndEmptyArrays: true } },
 
-  // 3️⃣ Flatten joined data
-  { $unwind: "$request" },
+    // 3. Match only future requests
+    {
+      $match: {
+        "request.date.to": { $gte: new Date() }
+      }
+    },
 
-  // 4️⃣ Only non-expired bookings (date.to >= now)
-  {
-    $match: {
-      $expr: {
-        $gte: ["$request.date.to", new Date()]
+    // 4. Join rentalHouses
+    {
+      $lookup: {
+        from: "rentalHouses",
+        localField: "request.rentalHouseId",
+        foreignField: "_id",
+        as: "rentalHouse"
+      }
+    },
+    { $unwind: { path: "$rentalHouse", preserveNullAndEmptyArrays: true } },
+
+    // 5. Project fields
+    {
+      $project: {
+        _id: 0,
+        title: "$rentalHouse.title",
+        date: "$request.date",
+        location: "$request.location",
+        amount: "$amount",
+        rentAmount: "$request.rentAmount"
       }
     }
-  },
+  ]);
 
-  // 5️⃣ Project only the fields you need
-  {
-    $project: {
-      _id: 0,
-      title: "$request.title",
-      date: "$request.date",
-      location: "$request.location",
-      amount: "$amount",
-      rentAmount: "$request.rentAmount"
-    }
-  }
-]);
 
 
 
 
   return transactions;
 };
+const getTransactionByPaymentIntentId = async (req: Request) => {
+  const paymentIntentId = req.params.paymentIntentId;
+
+  if (!paymentIntentId) {
+    throw new AppError(StatusCodes.BAD_REQUEST, 'Payment Intent ID is required');
+  }
+
+  const transaction = await PayModel.findOne({ transactionId: paymentIntentId }).populate({
+    path: "requestId",
+    populate: [
+      {
+        path: "tenantId",
+        model: Signup
+
+      },
+      {
+        path: "landloardId",
+        model: Signup
+      },
+      {
+        path: "rentalHouseId",
+        model: RentalHouseModel,
+      }
+    ],
+
+  });
+  if (!transaction) {
+    throw new AppError(StatusCodes.NOT_FOUND, 'Transaction not found for the given Payment Intent ID');
+  }
+
+  return transaction;
+}
+
+
 
 
 export const payService = {
@@ -452,6 +495,7 @@ export const payService = {
   WebhookFunc,
   getAllTransactionsFunc,
   getSingleTenantTransactionsFunc,
-  getSingleTransactionsByStatusFunc
+  getSingleTransactionsByStatusFunc,
+  getTransactionByPaymentIntentId
 
 }

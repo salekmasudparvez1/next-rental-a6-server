@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.payService = void 0;
+exports.payService = exports.getSingleTransactionsByStatusFunc = void 0;
 const config_1 = __importDefault(require("../../config"));
 const AppError_1 = __importDefault(require("../../errors/AppError"));
 const http_status_codes_1 = require("http-status-codes");
@@ -303,8 +303,13 @@ const getSingleTenantTransactionsFunc = async (req) => {
     if (!id) {
         throw new AppError_1.default(http_status_codes_1.StatusCodes.BAD_REQUEST, 'Tenant id is required');
     }
+    // Validate ObjectId to avoid BSONError
+    if (!mongoose_1.Types.ObjectId.isValid(id)) {
+        throw new AppError_1.default(http_status_codes_1.StatusCodes.BAD_REQUEST, 'Invalid tenant id');
+    }
     console.log("🚀 ~ file: pay.service.ts:326 ~ getSingleTenantTransactionsFunc ~ rawUser:", rawUser, id);
-    const transactions = await pay_model_1.PayModel.findOne({ _id: new mongoose_1.Types.ObjectId(id) }).populate({
+    // use findById since `id` is validated
+    const transactions = await pay_model_1.PayModel.findById(id).populate({
         path: "requestId",
         populate: [
             {
@@ -324,10 +329,64 @@ const getSingleTenantTransactionsFunc = async (req) => {
     });
     return transactions;
 };
+const getSingleTransactionsByStatusFunc = async (req) => {
+    const rawUser = req.user;
+    // Check if rawUser.id is a valid ObjectId
+    if (!rawUser) {
+        throw new AppError_1.default(http_status_codes_1.StatusCodes.UNAUTHORIZED, 'User not found');
+    }
+    const transactions = await pay_model_1.PayModel.aggregate([
+        // 1️⃣ Only successful payments
+        {
+            $match: {
+                "paymentStatus.status": "success"
+            }
+        },
+        // 2️⃣ Join tenantRequests collection
+        {
+            $lookup: {
+                from: "tenantRequests",
+                let: { reqId: { $toObjectId: "$requestId" } },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: { $eq: ["$_id", "$$reqId"] }
+                        }
+                    }
+                ],
+                as: "request"
+            }
+        },
+        // 3️⃣ Flatten joined data
+        { $unwind: "$request" },
+        // 4️⃣ Only non-expired bookings (date.to >= now)
+        {
+            $match: {
+                $expr: {
+                    $gte: ["$request.date.to", new Date()]
+                }
+            }
+        },
+        // 5️⃣ Project only the fields you need
+        {
+            $project: {
+                _id: 0,
+                title: "$request.title",
+                date: "$request.date",
+                location: "$request.location",
+                amount: "$amount",
+                rentAmount: "$request.rentAmount"
+            }
+        }
+    ]);
+    return transactions;
+};
+exports.getSingleTransactionsByStatusFunc = getSingleTransactionsByStatusFunc;
 exports.payService = {
     createPaymentIntentFunc,
     WebhookFunc,
     getAllTransactionsFunc,
-    getSingleTenantTransactionsFunc
+    getSingleTenantTransactionsFunc,
+    getSingleTransactionsByStatusFunc: exports.getSingleTransactionsByStatusFunc
 };
 //# sourceMappingURL=pay.service.js.map

@@ -50,9 +50,19 @@ const getAllTransactions = (0, catchAsync_1.default)(async (req, res) => {
         statusCode: http_status_codes_1.StatusCodes.OK,
     });
 });
-// get single tanent id
+// get single tanent transactions by status
+const getSingleTransactionsByStatus = (0, catchAsync_1.default)(async (req, res) => {
+    const result = await pay_service_1.payService.getSingleTransactionsByStatusFunc(req);
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        message: 'Single tenant transactions fetched successfully',
+        data: result,
+        statusCode: http_status_codes_1.StatusCodes.OK,
+    });
+});
+// get single tanent transactions by id
 const getSingleTenantTransactions = (0, catchAsync_1.default)(async (req, res) => {
-    const result = await pay_service_1.payService.getSingleTenantTransactionsFunc(req);
+    const result = await pay_service_1.payService.getSingleTransactionsByStatusFunc(req);
     (0, sendResponse_1.default)(res, {
         success: true,
         message: 'Single tenant transactions fetched successfully',
@@ -64,6 +74,7 @@ exports.paymentControler = {
     createPaymentIntent,
     Webhook,
     getAllTransactions,
-    getSingleTenantTransactions
+    getSingleTenantTransactions,
+    getSingleTransactionsByStatus
 };
 //# sourceMappingURL=pay.controller.js.map

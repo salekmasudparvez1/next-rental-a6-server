@@ -84,11 +84,25 @@ const getSingleTenantTransactions = catchAsync(async (req: Request, res: Respons
   });
 
 })
+//get transaction by payment intent id
+const getTransactionByPaymentIntentId = catchAsync(async (req: Request, res: Response) => {
+
+  const result = await payService.getTransactionByPaymentIntentId(req as Request);
+
+  sendResponse(res, {
+    success: true,
+    message: 'Transaction fetched successfully by payment intent id',
+    data: result,
+    statusCode: StatusCodes.OK,
+  });
+
+})
 
 export const paymentControler = {
   createPaymentIntent,
   Webhook,
   getAllTransactions,
   getSingleTenantTransactions,
-  getSingleTransactionsByStatus
+  getSingleTransactionsByStatus,
+  getTransactionByPaymentIntentId
 }
