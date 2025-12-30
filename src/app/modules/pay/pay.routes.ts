@@ -10,7 +10,10 @@ const payRouter = Router()
 payRouter.post("/create-checkout-session", paymentControler.createPaymentIntent)
 
 // Stripe webhook (must receive raw body for signature verification)
-payRouter.post('/webhook', express.raw({ type: 'application/json' }), paymentControler.Webhook);
+payRouter.post('/webhook', express.raw({
+  type: 'application/json',
+  verify: (req: any, _res, buf: Buffer) => { req.rawBody = buf; },
+}), paymentControler.Webhook);
 
 // Get all transactions
 payRouter.get('/transactions',verifyUser, paymentControler.getAllTransactions);

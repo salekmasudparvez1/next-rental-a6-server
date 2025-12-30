@@ -3,6 +3,7 @@ import catchAsync from "../../utils/catchAsync"
 import { payService } from "./pay.service";
 import sendResponse from "../../utils/sendResponse";
 import { StatusCodes } from "http-status-codes";
+import config from "../../config"; 
 
 
 const createPaymentIntent = catchAsync(async (req: Request, res: Response) => {
@@ -34,6 +35,9 @@ const Webhook = catchAsync(async (req: Request, res: Response) => {
   const rawBodyBuffer = (req as any).rawBody as Buffer | undefined;
   const payloadBody = rawBodyBuffer ?? (req.body instanceof Buffer ? req.body : Buffer.from(JSON.stringify(req.body)));
   const signature = req.headers['stripe-signature'] as string | undefined;
+
+  // Debug: help determine if Vercel is delivering the exact raw bytes and signature header
+  console.log('Stripe webhook incoming:', { hasRawBody: !!rawBodyBuffer, hasSignature: !!signature, endpointSecretConfigured: !!config.STRIPE_WEBHOOK_SECRET });
 
   const result = await payService.WebhookFunc(payloadBody, signature);
 
