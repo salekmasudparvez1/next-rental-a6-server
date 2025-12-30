@@ -70,7 +70,7 @@ const signupFunc = async (registrationDoc: IUserCreate) => {
   const jwtPayload = {
     id: res._id,
     email: res?.email,
-    userName: res?.username,
+    username: res?.username,
     role: res?.role,
     isBlocked: res?.isBlocked,
     isActive: res?.isActive,
@@ -165,7 +165,7 @@ const loginFunc = async (payload: any) => {
       id: user._id,
       email: user?.email,
       role: user?.role,
-      userName: user?.username,
+      username: user?.username,
       isBlocked: user?.isBlocked,
       isActive: user?.isActive,
       subscriptionPlan: user?.subscriptionPlan,

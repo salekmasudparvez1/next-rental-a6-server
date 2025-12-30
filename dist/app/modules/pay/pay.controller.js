@@ -70,11 +70,22 @@ const getSingleTenantTransactions = (0, catchAsync_1.default)(async (req, res) =
         statusCode: http_status_codes_1.StatusCodes.OK,
     });
 });
+//get transaction by payment intent id
+const getTransactionByPaymentIntentId = (0, catchAsync_1.default)(async (req, res) => {
+    const result = await pay_service_1.payService.getTransactionByPaymentIntentId(req);
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        message: 'Transaction fetched successfully by payment intent id',
+        data: result,
+        statusCode: http_status_codes_1.StatusCodes.OK,
+    });
+});
 exports.paymentControler = {
     createPaymentIntent,
     Webhook,
     getAllTransactions,
     getSingleTenantTransactions,
-    getSingleTransactionsByStatus
+    getSingleTransactionsByStatus,
+    getTransactionByPaymentIntentId
 };
 //# sourceMappingURL=pay.controller.js.map

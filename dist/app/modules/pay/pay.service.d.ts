@@ -1,6 +1,5 @@
 import { Request } from "express";
 import { Types } from "mongoose";
-export declare const getSingleTransactionsByStatusFunc: (req: Request) => Promise<any[]>;
 export declare const payService: {
     createPaymentIntentFunc: (req: Request) => Promise<{
         clientSecret: string | null;
@@ -26,5 +25,10 @@ export declare const payService: {
         __v: number;
     }) | null>;
     getSingleTransactionsByStatusFunc: (req: Request) => Promise<any[]>;
+    getTransactionByPaymentIntentId: (req: Request) => Promise<import("mongoose").Document<unknown, {}, import("./pay.interface").IpayProduct, {}, import("mongoose").DefaultSchemaOptions> & import("./pay.interface").IpayProduct & {
+        _id: Types.ObjectId;
+    } & {
+        __v: number;
+    }>;
 };
 //# sourceMappingURL=pay.service.d.ts.map

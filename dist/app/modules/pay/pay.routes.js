@@ -18,5 +18,7 @@ payRouter.get('/transactions', verifyUser_1.default, pay_controller_1.paymentCon
 payRouter.get('/transactions/:id', verifyUser_1.default, pay_controller_1.paymentControler.getSingleTenantTransactions);
 //get single tenant transactions without id by paid status
 payRouter.get('/transactions/status', verifyTenant_copy_1.default, pay_controller_1.paymentControler.getSingleTransactionsByStatus);
+//get transaction by payment intent id
+payRouter.get('/transaction/paymentIntentId/:paymentIntentId', verifyUser_1.default, pay_controller_1.paymentControler.getTransactionByPaymentIntentId);
 exports.default = payRouter;
 //# sourceMappingURL=pay.routes.js.map

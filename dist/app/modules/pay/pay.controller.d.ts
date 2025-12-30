@@ -5,5 +5,6 @@ export declare const paymentControler: {
     getAllTransactions: (req: Request, res: Response, next: import("express").NextFunction) => void;
     getSingleTenantTransactions: (req: Request, res: Response, next: import("express").NextFunction) => void;
     getSingleTransactionsByStatus: (req: Request, res: Response, next: import("express").NextFunction) => void;
+    getTransactionByPaymentIntentId: (req: Request, res: Response, next: import("express").NextFunction) => void;
 };
 //# sourceMappingURL=pay.controller.d.ts.map
