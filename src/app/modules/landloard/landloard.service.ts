@@ -7,6 +7,7 @@ import { Signup } from "../auth/auth.model";
 import { Request } from "express";
 import { Types } from "mongoose";
 import { TenantApplicationModel } from "../tenent/tenent.model";
+import { PayModel } from "../pay/pay.model";
 
 const createPropertiesFunc = async (data: any, files: Express.Multer.File[], userId: string) => {
   // Upload images to Cloudinary
@@ -108,7 +109,7 @@ const updatePropertiesFunc = async (req: Request) => {
         `property-${Date.now()}-${file.originalname}`,
         file.buffer,
       );
-    
+
       imagesUrls.push(secure_url);
     }
   }
@@ -122,7 +123,7 @@ const updatePropertiesFunc = async (req: Request) => {
     updateData.location = {
       ...propertyInfo.location,
       ...data.location,
-      map: data.location.map 
+      map: data.location.map
         ? { ...propertyInfo.location.map, ...data.location.map }
         : propertyInfo.location.map,
     };
@@ -177,7 +178,7 @@ const getAllRequestsFunc = async (req: Request) => {
   const userId = (req as Request & { userId: string }).userId;
   const houses = await TenantApplicationModel
     .find({ landloardId: userId })
-    .populate({ path: 'tenantId', model: Signup as any ,select:"-password -__v"})
+    .populate({ path: 'tenantId', model: Signup as any, select: "-password -__v" })
     .populate({ path: 'rentalHouseId', model: RentalHouseModel as any });
   return houses;
 
@@ -197,11 +198,87 @@ const updateRequestFunc = async (req: Request) => {
   if (userId.toString() !== requestInfo?.landloardId?.toString()) {
     throw new AppError(StatusCodes.FORBIDDEN, 'You are not authorized to update this tenant application!');
   }
-  
+
   // Step-2: Update the tenant application status
   const updated = await TenantApplicationModel.findByIdAndUpdate(id, { status: payload.status }, { new: true, runValidators: true });
   return updated;
 };
+const getLanloardDashbordFunc = async (req: Request) => {
+  const user = (req as any).user;
+
+  if (!user) {
+    throw new AppError(StatusCodes.UNAUTHORIZED, "You are not the author");
+  }
+
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+  const response = await RentalHouseModel.aggregate([
+    {
+      // Filter only rental houses of this landlord
+      $match: {
+        landloardId:new  Types.ObjectId(user?.id)
+      }
+    },
+    {
+      $facet: {
+        totalProperties: [{ $count: "count" }],
+        occupiedHouses: [{ $match: { status: "rented" } }, { $count: "count" }],
+        vacantHouses: [{ $match: { status: "available" } }, { $count: "count" }],
+        monthlyIncome: [
+          {
+            $lookup: {
+              from: "tenantRequests",
+              localField: "_id",
+              foreignField: "rentalHouseId",
+              as: "requests",
+            },
+          },
+          { $unwind: { path: "$requests", preserveNullAndEmptyArrays: true } },
+          {
+            $lookup: {
+              from: "transaction",
+              localField: "requests._id",
+              foreignField: "requestId",
+              as: "transactions",
+            },
+          },
+          { $unwind: { path: "$transactions", preserveNullAndEmptyArrays: true } },
+          {
+            $match: {
+              "transactions.createdAt": { $gte: startOfMonth, $lte: endOfMonth },
+              "transactions.paymentStatus.status": "success"
+            }
+          },
+          {
+            $group: {
+              _id: null,
+              monthlyIncome: { $sum: "$transactions.amount" },
+            },
+          },
+        ],
+      },
+    },
+    {
+      $project: {
+        totalProperties: { $arrayElemAt: ["$totalProperties.count", 0] },
+        occupiedHouses: { $arrayElemAt: ["$occupiedHouses.count", 0] },
+        vacantHouses: { $arrayElemAt: ["$vacantHouses.count", 0] },
+        monthlyIncome: {
+          $ifNull: [{ $arrayElemAt: ["$monthlyIncome.monthlyIncome", 0] }, 0],
+        },
+      },
+    },
+  ]);
+
+  return {
+    success: true,
+    message: "Dashboard data fetch successfully",
+    data: response,
+  };
+};
+
 
 
 
@@ -212,5 +289,6 @@ export const landloardService = {
   updatePropertiesFunc,
   deletePropertiesFunc,
   getAllRequestsFunc,
-  updateRequestFunc
+  updateRequestFunc,
+  getLanloardDashbordFunc
 };

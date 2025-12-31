@@ -6,7 +6,18 @@ import sendResponse from "../../utils/sendResponse";
 
 
 
+const getLanloardDashbord = catchAsync(async (req: Request, res: Response) => {
 
+  // Pass both data and files to service
+  const result = await landloardService.getLanloardDashbordFunc(req );
+
+  sendResponse(res, {
+    success: true,
+    message: 'Dashboard data fetch successfully',
+    data: result,
+    statusCode: StatusCodes.OK,
+  });
+})
 
 const createProperties = catchAsync(async (req: Request, res: Response) => {
   // Parse the data field from form-data
@@ -26,10 +37,11 @@ const createProperties = catchAsync(async (req: Request, res: Response) => {
     statusCode: StatusCodes.OK,
   });
 });
+
 const getAllProperties = catchAsync(async (req: Request, res: Response) => {
 
-const result = await landloardService.getAllPropertiesFunc(req as Request);
- 
+  const result = await landloardService.getAllPropertiesFunc(req as Request);
+
 
   sendResponse(res, {
     success: true,
@@ -38,22 +50,23 @@ const result = await landloardService.getAllPropertiesFunc(req as Request);
     statusCode: StatusCodes.OK,
   });
 });
+
 const getSingleProperty = catchAsync(async (req: Request, res: Response) => {
 
   const result = await landloardService.getSinglePropertyFunc(req as Request);
 
-    sendResponse(res, {
-      success: true,
-      message: 'Property retrieved successfully',
-      data: result,
-      statusCode: StatusCodes.OK,
-    });
+  sendResponse(res, {
+    success: true,
+    message: 'Property retrieved successfully',
+    data: result,
+    statusCode: StatusCodes.OK,
   });
+});
 
 const updateProperties = catchAsync(async (req: Request, res: Response) => {
 
   const result = await landloardService.updatePropertiesFunc(req as Request);
- 
+
 
   sendResponse(res, {
     success: true,
@@ -79,23 +92,23 @@ const getAllRequests = catchAsync(async (req: Request, res: Response) => {
 
   const result = await landloardService.getAllRequestsFunc(req as Request);
 
-    sendResponse(res, {
-      success: true,
-      message: 'Tenant requests retrieved successfully',
-      data: result,
-      statusCode: StatusCodes.OK,
-    });
+  sendResponse(res, {
+    success: true,
+    message: 'Tenant requests retrieved successfully',
+    data: result,
+    statusCode: StatusCodes.OK,
   });
+});
 
 const updateRequest = catchAsync(async (req: Request, res: Response) => {
 
-    const result = await landloardService.updateRequestFunc(req as Request);
-    sendResponse(res, {
-        success: true,
-        message: 'Tenant application updated',
-        data: result,
-        statusCode: StatusCodes.OK,
-    });
+  const result = await landloardService.updateRequestFunc(req as Request);
+  sendResponse(res, {
+    success: true,
+    message: 'Tenant application updated',
+    data: result,
+    statusCode: StatusCodes.OK,
+  });
 });
 
 export const landloardController = {
@@ -105,6 +118,7 @@ export const landloardController = {
   deleteProperties,
   getAllRequests,
   getSingleProperty,
-  updateRequest
+  updateRequest,
+  getLanloardDashbord
 };
 

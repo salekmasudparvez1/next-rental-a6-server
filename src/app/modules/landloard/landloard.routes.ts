@@ -8,6 +8,11 @@ import verifyLandLoard from "../../middlewares/verifyLandLoard";
 
 
 const landloardRouter = Router();
+//dashboard info
+landloardRouter.get('/info',
+    verifyLandLoard,
+    landloardController.getLanloardDashbord);
+
 //create properties
 landloardRouter.post('/listings',
     verifyLandLoard,
