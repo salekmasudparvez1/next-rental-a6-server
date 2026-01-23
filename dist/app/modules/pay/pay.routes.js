@@ -11,7 +11,10 @@ const verifyTenant_copy_1 = __importDefault(require("../../middlewares/verifyTen
 const payRouter = (0, express_1.Router)();
 payRouter.post("/create-checkout-session", pay_controller_1.paymentControler.createPaymentIntent);
 // Stripe webhook (must receive raw body for signature verification)
-payRouter.post('/webhook', express_2.default.raw({ type: 'application/json' }), pay_controller_1.paymentControler.Webhook);
+payRouter.post('/webhook', express_2.default.raw({
+    type: 'application/json',
+    verify: (req, _res, buf) => { req.rawBody = buf; },
+}), pay_controller_1.paymentControler.Webhook);
 // Get all transactions
 payRouter.get('/transactions', verifyUser_1.default, pay_controller_1.paymentControler.getAllTransactions);
 // Get single tenant transactions by id

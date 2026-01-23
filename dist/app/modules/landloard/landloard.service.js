@@ -9,6 +9,7 @@ const cloudinary_1 = require("../../config/cloudinary");
 const AppError_1 = __importDefault(require("../../errors/AppError"));
 const landloard_model_1 = require("./landloard.model");
 const auth_model_1 = require("../auth/auth.model");
+const mongoose_1 = require("mongoose");
 const tenent_model_1 = require("../tenent/tenent.model");
 const createPropertiesFunc = async (data, files, userId) => {
     // Upload images to Cloudinary
@@ -49,6 +50,7 @@ const getAllPropertiesFunc = async (req) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
     const total = await landloard_model_1.RentalHouseModel.countDocuments({ landloardId: userId });
+    //filter part
     const properties = await landloard_model_1.RentalHouseModel.find({ landloardId: userId }).skip(skip).limit(limit);
     return {
         data: properties,
@@ -172,6 +174,77 @@ const updateRequestFunc = async (req) => {
     const updated = await tenent_model_1.TenantApplicationModel.findByIdAndUpdate(id, { status: payload.status }, { new: true, runValidators: true });
     return updated;
 };
+const getLanloardDashbordFunc = async (req) => {
+    const user = req.user;
+    if (!user) {
+        throw new AppError_1.default(http_status_codes_1.StatusCodes.UNAUTHORIZED, "You are not the author");
+    }
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    const response = await landloard_model_1.RentalHouseModel.aggregate([
+        {
+            // Filter only rental houses of this landlord
+            $match: {
+                landloardId: new mongoose_1.Types.ObjectId(user?.id)
+            }
+        },
+        {
+            $facet: {
+                totalProperties: [{ $count: "count" }],
+                occupiedHouses: [{ $match: { status: "rented" } }, { $count: "count" }],
+                vacantHouses: [{ $match: { status: "available" } }, { $count: "count" }],
+                monthlyIncome: [
+                    {
+                        $lookup: {
+                            from: "tenantRequests",
+                            localField: "_id",
+                            foreignField: "rentalHouseId",
+                            as: "requests",
+                        },
+                    },
+                    { $unwind: { path: "$requests", preserveNullAndEmptyArrays: true } },
+                    {
+                        $lookup: {
+                            from: "transaction",
+                            localField: "requests._id",
+                            foreignField: "requestId",
+                            as: "transactions",
+                        },
+                    },
+                    { $unwind: { path: "$transactions", preserveNullAndEmptyArrays: true } },
+                    {
+                        $match: {
+                            "transactions.createdAt": { $gte: startOfMonth, $lte: endOfMonth },
+                            "transactions.paymentStatus.status": "success"
+                        }
+                    },
+                    {
+                        $group: {
+                            _id: null,
+                            monthlyIncome: { $sum: "$transactions.amount" },
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            $project: {
+                totalProperties: { $arrayElemAt: ["$totalProperties.count", 0] },
+                occupiedHouses: { $arrayElemAt: ["$occupiedHouses.count", 0] },
+                vacantHouses: { $arrayElemAt: ["$vacantHouses.count", 0] },
+                monthlyIncome: {
+                    $ifNull: [{ $arrayElemAt: ["$monthlyIncome.monthlyIncome", 0] }, 0],
+                },
+            },
+        },
+    ]);
+    return {
+        success: true,
+        message: "Dashboard data fetch successfully",
+        data: response,
+    };
+};
 exports.landloardService = {
     createPropertiesFunc,
     getAllPropertiesFunc,
@@ -179,6 +252,7 @@ exports.landloardService = {
     updatePropertiesFunc,
     deletePropertiesFunc,
     getAllRequestsFunc,
-    updateRequestFunc
+    updateRequestFunc,
+    getLanloardDashbordFunc
 };
 //# sourceMappingURL=landloard.service.js.map

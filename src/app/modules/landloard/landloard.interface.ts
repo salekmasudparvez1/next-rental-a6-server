@@ -41,3 +41,13 @@ export interface TRealHomeModel {
   addComment(houseId: string, comment: IComment): Promise<IRentalHouse | null>;
 }
 
+export interface IQueryParamsAllPost {
+  page?: number;
+  limit?: number;
+  bedrooms?: string;
+  district?: string;
+  division?: string;
+  maxPrice?: string;
+  minPrice?: string;
+  subDistrict?: string;
+}

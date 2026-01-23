@@ -43,5 +43,10 @@ export declare const landloardService: {
     } & {
         __v: number;
     }) | null>;
+    getLanloardDashbordFunc: (req: Request) => Promise<{
+        success: boolean;
+        message: string;
+        data: any[];
+    }>;
 };
 //# sourceMappingURL=landloard.service.d.ts.map

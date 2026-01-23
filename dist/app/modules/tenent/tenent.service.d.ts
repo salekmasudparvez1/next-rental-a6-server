@@ -1,14 +1,6 @@
 import mongoose, { Types } from 'mongoose';
 import { Request } from 'express';
-interface RequestWithUser extends Request {
-    query: {
-        id?: string;
-        page?: string;
-        limit?: string;
-    };
-    userId?: Types.ObjectId;
-}
-export declare const getAllPropertiesPublicFunc: (req: RequestWithUser) => Promise<{
+export declare const getAllPropertiesPublicFunc: (req: any) => Promise<{
     data: {
         landloardDetails: (mongoose.Document<unknown, {}, import("../auth/auth.interface").IUserCreate, {}, mongoose.DefaultSchemaOptions> & import("../auth/auth.interface").IUserCreate & Required<{
             _id: Types.ObjectId;
@@ -73,7 +65,7 @@ export declare const tenentService: {
     } & {
         __v: number;
     }) | null>;
-    getAllPropertiesPublicFunc: (req: RequestWithUser) => Promise<{
+    getAllPropertiesPublicFunc: (req: any) => Promise<{
         data: {
             landloardDetails: (mongoose.Document<unknown, {}, import("../auth/auth.interface").IUserCreate, {}, mongoose.DefaultSchemaOptions> & import("../auth/auth.interface").IUserCreate & Required<{
                 _id: Types.ObjectId;
@@ -112,5 +104,4 @@ export declare const tenentService: {
         };
     }>;
 };
-export {};
 //# sourceMappingURL=tenent.service.d.ts.map

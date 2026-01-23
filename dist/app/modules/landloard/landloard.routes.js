@@ -10,6 +10,8 @@ const landloard_validations_1 = require("./landloard.validations");
 const multer_1 = require("../../utils/multer");
 const verifyLandLoard_1 = __importDefault(require("../../middlewares/verifyLandLoard"));
 const landloardRouter = (0, express_1.Router)();
+//dashboard info
+landloardRouter.get('/info', verifyLandLoard_1.default, landloard_controller_1.landloardController.getLanloardDashbord);
 //create properties
 landloardRouter.post('/listings', verifyLandLoard_1.default, multer_1.uploadMultiple, (0, validateRequest_1.default)(landloard_validations_1.RentalHouseUpdateZodSchema), landloard_controller_1.landloardController.createProperties);
 //get all properties

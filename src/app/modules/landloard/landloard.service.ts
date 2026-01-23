@@ -57,7 +57,11 @@ const getAllPropertiesFunc = async (req: Request) => {
   const limit = parseInt(req.query.limit as string) || 10;
   const skip = (page - 1) * limit;
   const total = await RentalHouseModel.countDocuments({ landloardId: userId });
+  //filter part
+ 
+
   const properties = await RentalHouseModel.find({ landloardId: userId }).skip(skip).limit(limit);
+
   return {
     data: properties,
     meta: {
@@ -218,7 +222,7 @@ const getLanloardDashbordFunc = async (req: Request) => {
     {
       // Filter only rental houses of this landlord
       $match: {
-        landloardId:new  Types.ObjectId(user?.id)
+        landloardId: new Types.ObjectId(user?.id)
       }
     },
     {

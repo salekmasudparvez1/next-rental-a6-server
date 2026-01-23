@@ -7,5 +7,6 @@ export declare const landloardController: {
     getAllRequests: (req: Request, res: Response, next: import("express").NextFunction) => void;
     getSingleProperty: (req: Request, res: Response, next: import("express").NextFunction) => void;
     updateRequest: (req: Request, res: Response, next: import("express").NextFunction) => void;
+    getLanloardDashbord: (req: Request, res: Response, next: import("express").NextFunction) => void;
 };
 //# sourceMappingURL=landloard.controller.d.ts.map

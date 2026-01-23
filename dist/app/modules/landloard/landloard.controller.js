@@ -8,6 +8,16 @@ const catchAsync_1 = __importDefault(require("../../utils/catchAsync"));
 const landloard_service_1 = require("./landloard.service");
 const http_status_codes_1 = require("http-status-codes");
 const sendResponse_1 = __importDefault(require("../../utils/sendResponse"));
+const getLanloardDashbord = (0, catchAsync_1.default)(async (req, res) => {
+    // Pass both data and files to service
+    const result = await landloard_service_1.landloardService.getLanloardDashbordFunc(req);
+    (0, sendResponse_1.default)(res, {
+        success: true,
+        message: 'Dashboard data fetch successfully',
+        data: result,
+        statusCode: http_status_codes_1.StatusCodes.OK,
+    });
+});
 const createProperties = (0, catchAsync_1.default)(async (req, res) => {
     // Parse the data field from form-data
     const data = JSON.parse(req.body?.data);
@@ -84,6 +94,7 @@ exports.landloardController = {
     deleteProperties,
     getAllRequests,
     getSingleProperty,
-    updateRequest
+    updateRequest,
+    getLanloardDashbord
 };
 //# sourceMappingURL=landloard.controller.js.map

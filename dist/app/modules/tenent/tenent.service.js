@@ -153,9 +153,37 @@ const getAllPropertiesPublicFunc = async (req) => {
             };
         }
     }
-    // Otherwise fetch paginated properties
+    //filter part 
+    const query = {};
+    const bedrooms = req.query.bedrooms || "";
+    const district = req.query.district || "";
+    const division = req.query.division || "";
+    const maxPrice = req.query.maxPrice || "";
+    const minPrice = req.query.minPrice || "";
+    const subDistrict = req.query.subDistrict || "";
+    if (bedrooms && bedrooms.trim() !== "")
+        query.bedroomNumber = bedrooms;
+    if (district && district.trim() !== "") {
+        if (!query.location)
+            query.location = {};
+        query.location.district = district;
+    }
+    if (division && division.trim() !== "") {
+        if (!query.location)
+            query.location = {};
+        query.location.division = division;
+    }
+    if (maxPrice && maxPrice.trim() !== "")
+        query.rentAmount = { $lte: maxPrice };
+    if (minPrice && minPrice.trim() !== "")
+        query.rentAmount = { $gte: minPrice };
+    if (subDistrict && subDistrict.trim() !== "") {
+        if (!query.location)
+            query.location = {};
+        query.location.subDistrict = subDistrict;
+    }
     const total = await landloard_model_1.RentalHouseModel.countDocuments();
-    const properties = await landloard_model_1.RentalHouseModel.find().skip(skip).limit(limit);
+    const properties = await landloard_model_1.RentalHouseModel.find({ ...query }).skip(skip).limit(limit);
     return {
         data: properties,
         meta: {
